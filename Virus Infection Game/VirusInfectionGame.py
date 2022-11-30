@@ -5,6 +5,7 @@
 # Your Section: F
 # Collaborators: yilunw
 #################################################################
+
 import string
 import copy
 import random
@@ -12,10 +13,13 @@ import sys
 
 from image_util import *
 from tkinter import *
-from BasicAI import *
+from AI import *
 from Audio import *
 
-##init part
+class UI(object):
+    def __init__(self):
+        # TODO
+        pass 
 
 def init(data):
     #initialize the first empty normal game board with a 8*8 size and two roles.
