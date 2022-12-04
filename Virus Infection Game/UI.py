@@ -1,0 +1,481 @@
+# Virus Infection Game User Interface (UI), using tkinter
+
+from tkinter import *
+from board import Board
+import string
+import sys
+
+class UI(object):
+    def __init__(self):
+        self.GameBoard = Board() # default board size is 8, number of players is 2
+
+    def init(self, data):
+        # board size settings
+        data.size = self.GameBoard.size
+        data.margin = 10 # margin around the board
+        data.cellSize = (data.width - data.margin * 2) / data.size
+        data.board = self.GameBoard.board
+        data.boardWidth  = data.width - 2*data.margin
+        data.boardHeight = data.height - 2*data.margin
+        data.cellWidth  = data.boardWidth / data.size
+        data.cellHeight = data.boardHeight / data.size
+
+        # home page image
+        scaleWidth, scaleHeight = 3, 3
+        data.homePageImageWidth = data.width
+        data.homePageImageHeight = data.height
+        data.homePageImage = PhotoImage(file="HomepageBackground.gif")
+        data.homePageImage = data.homePageImage.zoom(scaleWidth, scaleHeight)
+
+        # virus win background image
+        data.Virus1WinBackgroundImageWidth = data.width
+        data.Virus1WinBackgroundImageHeight = data.height
+        data.Virus1WinBackgroundImage = PhotoImage(file="Virus1WinBackground.gif")
+        data.Virus1WinBackgroundImage = data.Virus1WinBackgroundImage.zoom(scaleWidth, scaleHeight)
+
+        # pills win background image
+        data.PillsWinBackgroundImageWidth = data.width
+        data.PillsWinBackgroundImageHeight = data.height
+        data.PillsWinBackgroundImage = PhotoImage(file="PillsWinBackground.gif")
+        data.PillsWinBackgroundImage = data.PillsWinBackgroundImage.zoom(scaleWidth, scaleHeight)
+
+        # pills and viruses image
+        data.pillsImage = PhotoImage(file="pills.gif", width=100, height=100)
+        data.virus1Image = PhotoImage(file="Virus1.gif", width=100, height=100)
+        
+        # start page
+        data.startPage = True
+        data.singlePlayerMode = False
+        data.multiPlayerMode = False
+        data.settingsMode = False
+
+        # size, # of player(s), level selection page (only applicable for single player mode)
+        data.customizeMode = False
+        data.selectingBoardSize = False
+        data.selectingNumPlayers = False
+
+        data.levelSelectionMode = False 
+
+        # game page modes
+        data.inGame = False
+
+        # game state settings (Game Over, Game Paused)
+        data.gameOver = False
+        data.gamePaused = False
+
+        # In game selection (TODO: implement moving sequence of players--pills first, virus then, aka 每个棋子一次只能走一步)
+        data.selection = False
+
+        # time settings
+        data.timerDelay = 1000
+        data.timeCounter = 0
+
+    def resetGameBoard(self, data):
+        self.GameBoard = Board(data.size)
+        data.board = self.GameBoard.board
+        data.cellSize = (data.width - 2*data.margin) / data.size
+
+## Controller functions below
+    def mousePressed(self, event, data):
+        # three buttons in the start page
+        if data.startPage:
+            # enter the single player mode
+            if data.width//4 <= event.x <= data.width*(3/4) and \
+                data.height//2 <= event.y <= data.height*(3/5):
+                data.singlePlayerMode = True
+                data.customizeMode = True
+                data.startPage = False
+
+            # enter the multi player mode
+            elif data.width//4 <= event.x <= data.width*(3/4) and \
+                data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                data.multiPlayerMode = True
+                data.customizeMode = True
+                data.startPage = False
+
+            # exit button
+            elif data.width*(5/6) <= event.x <= data.width*(29/30) and \
+                data.height*(9/10) <= event.y <= data.height*(29/30):
+                sys.exit()
+
+            # clear mouse position after each manipulation
+            event.x, event.y = None, None
+
+        # customize size page
+        elif data.customizeMode:
+            # press the empty "size button" to enter the board size
+            if event.x in range(data.width//2, int(data.width*(3/4))) and \
+               event.y in range(data.height//2, int(data.height*(3/5))):
+                data.selectingBoardSize = True
+
+            ## TODO
+            # elif event.x in range(data.width//2, int(data.width*(3/4))) and \
+            #    event.y in range(data.height//2, int(data.height*(3/5))):
+            #     data.selectingNumPlayers = True
+
+            # press the finish button to enter the game state
+            elif event.x in range(int(data.width*(3/8)), int(data.width*(5/8))) and \
+                 event.y in range(int(data.height*(1/4+1/15)), int(data.height*(7/20+1/15))):
+                self.resetGameBoard(data)
+                if data.singlePlayerMode: data.levelSelectionMode = True
+                else: data.inGame = True
+                data.customizeMode = False
+
+            # clear mouse position after each manipulation
+            event.x, event.y = None, None
+
+        ## uncomment this part until AI part finished
+        # # level selection mode (only applicable for AI mode)
+        # if data.levelSelectionMode:
+        #     # easy level
+        #     if event.x in range(data.width//4, int(data.width*(3/4))) and \
+        #         event.y in range(data.height//2, int(data.height*(3/5))):
+        #         data.AI = AI(self.GameBoard, 0)
+        #         data.levelSelectionMode = False
+        #         data.inGame = True
+            
+        #     # normal level
+        #     elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+        #         event.y in range(int(data.height*(3/5+1/30)), \
+        #                         int(data.height*(7/10+1/30))):
+        #         data.AI = AI(self.GameBoard, 1)
+        #         data.levelSelectionMode = False
+        #         data.inGame = True
+
+        #     # hard level
+        #     elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+        #         event.y in range(int(data.height*(7/10+1/15)), \
+        #                         int(data.height*(4/5+1/15))):
+        #         data.AI = AI(self.GameBoard, 2)
+        #         data.levelSelectionMode = False
+        #         data.inGame = True
+
+        #     # clear mouse position after each manipulation
+        #     event.x, event.y = None, None
+
+        elif data.inGame:
+            row, col = getCell(event.x, event.y, data)
+            # select this (row, col) unless it is selected
+            if data.selection == (row, col): data.selection = (-1, -1)
+            else: data.selection = (row, col)
+
+        if data.settingsMode:
+            pass # TODO
+
+
+    def keyPressed(self, event, data):
+        # press "shift + b" to return back to home page from anywhere
+        if event.keysym == "B": 
+            data.startPage = True
+            data.singlePlayerMode = False
+            data.multiPlayerMode = False
+            data.customizeMode = False
+            data.selectingBoardSize = False
+            data.levelSelectionMode = False
+            data.inGame = False
+
+        # customize size mode
+        if data.customizeMode:
+            if data.selectingBoardSize and (event.keysym in string.digits):
+                if int(event.keysym) in range(4, 10):
+                    data.size = int(event.keysym)
+                elif int(event.keysym) == 1: # enter 1 to represent size = 10
+                    data.size = 10
+                data.selectingBoardSize = False
+            elif data.selectingNumPlayers and (event.keysym in string.digits):
+                 if int(event.keysym) in range(2, 4):
+                    # data.__ = int(event.keysym) # TODO
+                    pass
+        # in game mode
+        if data.inGame:
+            # pause the game (can be retrieved)
+            if event.keysym == "p":
+                data.paused = not data.paused 
+
+            # making moves based on the user's pressing keys
+            if not self.GameBoard.GameOver():
+                canMove = False
+                if data.paused: 
+                    print("the game is paused now! you cannot move until the game is unpaused")
+                else:
+                    direction = event.keysym
+                    if direction == "Up": 
+                        canMove = self.GameBoard.moveUp()
+                    elif direction == "Down":
+                        canMove = self.GameBoard.moveDown()
+                    elif direction == "Left":
+                        canMove = self.GameBoard.moveLeft()
+                    elif direction == "Right":
+                        canMove = self.GameBoard.moveRight()
+
+                    # add a new number after each legal move
+                    if canMove: 
+                        data.newTileIndex, data.newTileNum = self.GameBoard.addNewTile() 
+                        print("data.newTileIndex: ", data.newTileIndex)
+                    else: print("cannot move in this direction") 
+                    self.GameBoard.printBoard()
+                data.board = self.GameBoard.board
+                data.finishAdding = False # set to False for next move
+
+            else: 
+                if self.GameBoard.contains2048(): data.reach2048 = True
+                else: data.cannotMove = True
+                data.inGame = False
+                print("Game Over!")
+
+        else:
+            assert(not data.inGame)
+            # restart the game only when the current game is over
+            if event.keysym == "r" :
+                data.inGame = True
+                self.resetGameBoard(data)
+
+                # for multi-player mode, directly return to the start page
+                if data.multiPlayerMode: self.init(data) 
+
+## Graphic drawing functions below
+    # home page
+    def drawStartPage(self, canvas, data):
+        canvas.create_rectangle(0, 0, data.width, data.height, fill = "VioletRed1")
+        canvas.create_image(data.width//2, data.height//2, image = data.homePageImage)
+        
+        #draw buttons and icons
+        canvas.create_text(data.width//2, data.height//8, text = "VIRUS", fill = "#64DD17", font = "Chalkduster 75 bold" )
+        canvas.create_text(data.width//2, data.height//4, text = "INFECTION", fill = "light coral", font = "Chalkduster 75 bold" )    
+        canvas.create_text(data.width//2, 3*(data.height//8), text = "GAME", fill = "green yellow", font = "Chalkduster 75 bold" )                                        
+        canvas.create_image(data.width*(7/8), data.height*(1/8), image = data.virus1Image)
+        canvas.create_image(data.width*(1/8), data.height*(3/8), image = data.virus1Image)
+        canvas.create_image(data.width*(1/8), data.height*(1/8), image = data.pillsImage)
+        canvas.create_image(data.width*(7/8), data.height*(3/8), image = data.pillsImage)
+
+        #single player mode button
+        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(11/20), text = "Single Player", font = "Arial 40 bold")
+
+        #multi-player mode button
+        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(13/20+1/30), text = "MultiPlayer", font = "Arial 40 bold")
+
+        #settings button
+        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Settings", font = "Arial 40 bold")
+
+        #quit button
+        canvas.create_rectangle(data.width*(5/6), data.height*(9/10), data.width*(29/30), data.height*(29/30), fill = "light grey")
+        canvas.create_text(data.width*(9/10), data.height*(14/15), text = "Quit", font = "Arial 30 bold")
+
+    # customize size/player page
+    def drawCustomizePage(self, canvas, data):
+        canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
+        canvas.create_text(data.width//2, data.height//4, text = "Select Your Size Here!", font = "Arial 50 bold", fill = "purple")
+
+        # size (5-10) and number of players (2-4) TODO
+        canvas.create_text(data.width//4, data.height*(11/20), text = "Board Size(Width):", font = "Arial 45")
+        if data.selectingBoardSize:
+            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill = "light goldenrod")
+        else:
+            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
+        canvas.create_text(data.width*(5/8), data.height*(11/20), text = data.boardSize, font = "Arial 35")
+        canvas.create_text(data.width*(7/8), data.height*(11/20), text = "(5-10)", font = "Arial 35")    
+
+        # finish button
+        canvas.create_rectangle(data.width*(3/8), data.height*(7/10+1/15), data.width*(5/8), data.height*(4/5+1/15), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Finish!", font = "Arial 40")
+
+    # AI mode level selection page
+    def drawLevelSelectionPage(self, canvas, data):
+        canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
+        canvas.create_text(data.width//2, data.height//4, text = "Select a Level!", font = "Arial 55 bold", fill = "purple")
+
+        # easy mode
+        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(11/20), text = "Easy", font = "Arial 35 bold")
+
+        # normal mode
+        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(13/20+1/30), text = "Normal", font = "Arial 35 bold")
+
+        # hard mode
+        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Hard", font = "Arial 35 bold")
+
+    def drawSettingsPage(canvas, data):
+        canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
+        canvas.create_text(data.width//2, data.height//4, text = "Press the button below \n to start/stop the music", font = "Arial 55 bold", fill = "purple")
+
+        # start button
+        canvas.create_rectangle(data.width*(3/8), data.height*(2/5), data.width*(5/8), data.height//2, fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(9/20), text = "Start", font = "Arial 40 bold")
+
+        # stop button
+        canvas.create_rectangle(data.width*(3/8), data.height*(11/20), data.width*(5/8), data.height*(13/20), fill = "lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/5), text = "Stop", font = "Arial 40 bold")
+        canvas.create_text(data.width//2, data.height*(3/4), text = "Press 'b' to return back to home page", font = "Arial 40 bold")
+
+    #### TODO
+    # game page
+    def drawCell(self, canvas, data, row, col):
+        # draw every cell
+        currNum = data.board[row][col]
+        cellBoundsWidth = 2.5
+        if (row, col) == data.newTileIndex and not data.finishAdding: # new added tile with contrasting color
+            canvas.create_rectangle(data.margin + data.cellSize*col, data.margin + \
+            data.titlePlace + data.cellSize*row, data.margin + data.cellSize*(col+1), \
+            data.margin + data.titlePlace + data.cellSize*(row+1), \
+            fill = "cyan", width = cellBoundsWidth)
+            data.finishAdding = True
+            data.newTileIndex = None, None
+        else:
+            canvas.create_rectangle(data.margin + data.cellSize*col, data.margin + \
+            data.titlePlace + data.cellSize*row, data.margin + data.cellSize*(col+1), \
+            data.margin + data.titlePlace + data.cellSize*(row+1), \
+            fill = data.colors[currNum], width = cellBoundsWidth)
+
+    def drawBoard(self, canvas, data):
+        # draw the board by filling every cells(using draw cells)
+        for row in range(data.size):
+            for col in range(data.size):
+                self.drawCell(canvas, data, row, col)
+                if data.board[row][col]:
+                    textSize = 180 // data.size
+                    canvas.create_text(data.margin + data.cellSize/2 + 
+                        col*data.cellSize, data.titlePlace + data.margin + 
+                        data.cellSize/2 + row*data.cellSize, 
+                        text = data.board[row][col], \
+                        font = ("Arial", textSize), fill = "black") 
+
+
+    def drawGamePage(self, canvas, data):
+        canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EFEBE9")
+        canvas.create_text(data.width / 4, data.titlePlace / 2, 
+                            text = "2048", \
+                            font = "Arial 60 bold", fill = "#795548")
+
+        canvas.create_text((data.width * 0.75), data.titlePlace / 2, 
+                            text = "Score:" + str(self.GameBoard.score) ,\
+                            font = "Arial 23 bold", fill = "purple")
+        self.drawBoard(canvas, data)
+
+        # Game paused
+        if data.paused: 
+            canvas.create_rectangle(0, data.height/3, data.width, \
+                                            data.height*(2/3), fill = "gold")
+            canvas.create_text(data.width/2, data.height/2, text = "Game Paused!",\
+                                font = "TimesNewRoman 35 bold", fill = "red")
+
+    # game over page  
+    def drawGameOverPage(self, canvas, data):
+        # reach 2048
+        if data.reach2048: 
+            canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EEEBE9")
+            canvas.create_text(data.width / 2, data.height * 0.25, \
+                   text = "Game Score: "+ str(self.GameBoard.score), \
+                   font = "Arial 30 bold", fill = "purple")
+            canvas.create_text(data.width / 2, data.height / 2, \
+                               text = "Congratulations!", \
+                               font = "Arial 50 bold", fill = "red")
+            canvas.create_text(data.width / 2, data.height * 0.6, \
+                               text = "you get 2048 and WIN!", \
+                               font = "Arial 50 bold", fill = "red")
+
+        # cannot have any legal moves before reach 2048
+        elif data.cannotMove:
+            canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EEEBE9")
+            canvas.create_text(data.width / 2, data.height / 2, \
+                               text = "You LOSE", \
+                               font = "Arial 50 bold", fill = "black")
+            canvas.create_text(data.width / 2, data.height * 0.25, \
+                   text = "Game Score: "+ str(self.GameBoard.score), \
+                   font = "Arial 30 bold", fill = "purple")
+            canvas.create_text(data.width / 2, data.height * 0.75, \
+                   text = "press 'r' to restart", \
+                   font = "Arial 30 bold", fill = "purple")
+
+    def redrawAll(self, canvas, data):
+        # start page
+        if data.startPage: self.drawStartPage(canvas, data)
+
+        # customize size page
+        elif data.customizeMode: self.drawCustomizePage(canvas, data)
+
+        # AI mode level selection page
+        elif data.levelSelectionMode: 
+            assert(data.singlePlayerMode and not data.multiPlayerMode and not data.customizeMode)
+            self.drawLevelSelectionPage(canvas, data)
+
+        # in game page
+        elif data.inGame: self.drawGamePage(canvas, data)
+
+        # game over page
+        elif data.reach2048 or data.cannotMove: self.drawGameOverPage(canvas, data)
+
+    ## uncomment this part until AI part finished
+    # def AImove(self, data):
+    #     print("AI playing")
+    #     print("step %d:" % data.AIstep)
+    #     data.AI.nextMove()
+    #     # update the board after each AI's move
+    #     self.GameBoard.board = data.AI.GameBoard.board 
+    #     self.GameBoard.printBoard()
+    #     data.board = data.AI.GameBoard.board
+    #     data.AIstep += 1
+
+    def timerFired(self, data):
+        if data.inGame and not (data.reach2048 or data.cannotMove) and not data.paused:
+            data.timeCounter += 1
+
+            if data.multiPlayerMode:
+                data.timerDelay = 200
+                if not self.GameBoard.GameOver():
+                    # move twice in each timer delay period
+                    self.AImove(data)
+                else:
+                    data.inGame = False
+                    if self.GameBoard.contains2048(): data.reach2048 = True
+                    else: data.cannotMove = True
+
+    def runGame(self, width, height): # tkinter starter code
+        def redrawAllWrapper(canvas, data):
+            canvas.delete(ALL)
+            canvas.create_rectangle(0, 0, data.width, data.height,
+                                    fill='white', width=0)
+            self.redrawAll(canvas, data)
+            canvas.update()    
+
+        def mousePressedWrapper(event, canvas, data):
+            self.mousePressed(event, data)
+            redrawAllWrapper(canvas, data)
+
+        def keyPressedWrapper(event, canvas, data):
+            self.keyPressed(event, data)
+            redrawAllWrapper(canvas, data)
+
+        def timerFiredWrapper(canvas, data):
+            self.timerFired(data)
+            redrawAllWrapper(canvas, data)
+            # pause, then call timerFired again
+            canvas.after(data.timerDelay, timerFiredWrapper, canvas, data)
+        # Set up data and call init
+        class Struct(object): pass
+        data = Struct()
+        data.width = width
+        data.height = height
+        data.timerDelay = 500 # milliseconds
+        root = Tk()
+        root.title("Virus Infection Game")
+        root.resizable(width=False, height=False) # prevents resizing window
+        self.init(data)
+        # create the root and the canvas
+        canvas = Canvas(root, width=data.width, height=data.height)
+        canvas.configure(bd=0, highlightthickness=0)
+        canvas.pack()
+        # set up events
+        root.bind("<Button-1>", lambda event:
+                                mousePressedWrapper(event, canvas, data))
+        root.bind("<Key>", lambda event:
+                                keyPressedWrapper(event, canvas, data))
+        timerFiredWrapper(canvas, data)
+        # and launch the app
+        root.mainloop()  # blocks until window is closed
+
+
