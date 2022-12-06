@@ -47,9 +47,10 @@ class Board(object):
             return False
 
     def getLegalPos(self, pos): # may be useful later in UI to (click->show legal position)
+        assert(self.board[pos[0]][pos[1]] != -1) # must have a piece there
         legalPos = []
-        for i in range(max(pos[0]-2, 0), min(pos[0]+3, self.size-1)):
-            for j in range(max(pos[0]-2, 0), min(pos[0]+3, self.size-1)):
+        for i in range(max(pos[0]-2, 0), min(pos[0]+3, self.size)):
+            for j in range(max(pos[1]-2, 0), min(pos[1]+3, self.size)):
                 newPos = (i, j)
                 if self.isLegalMove(pos, newPos) or self.isLegalJump(pos, newPos): legalPos.append(newPos)
         return legalPos
@@ -150,6 +151,7 @@ if __name__ == "__main__":
     # board.step(1, (4, 1), (4, 2)) # should raise assertion error here
     board.step(1, (0, 0), (1, 1))
     board.printBoard() 
+    print("legal position", board.getLegalPos((4, 0)))
     board.step(0, (4, 0), (3, 1))
     board.printBoard() 
     board.step(1, (1, 1), (1, 2))

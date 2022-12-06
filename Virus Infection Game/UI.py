@@ -13,6 +13,7 @@ class UI(object):
         # board size settings
         data.size = self.GameBoard.size
         data.players = self.GameBoard.players
+        data.playeridx = 0 
         data.board = self.GameBoard.board
         data.margin = 10 # margin around the board
         data.cellSize = (data.width - data.margin * 2) / data.size
@@ -65,7 +66,9 @@ class UI(object):
         data.gamePaused = False
 
         # In game selection (TODO: implement moving sequence of players--pills first, virus then, aka 每个棋子一次只能走一步)
-        data.selection = False
+        data.selectedPos = -1, -1
+        data.putPos = -1, -1
+        data.winningPlayer = None
 
         # time settings
         data.timerDelay = 1000
@@ -81,22 +84,19 @@ class UI(object):
         # three buttons in the start page
         if data.startPage:
             # enter the single player mode
-            if data.width//4 <= event.x <= data.width*(3/4) and \
-                data.height//2 <= event.y <= data.height*(3/5):
+            if data.width//4 <= event.x <= data.width*(3/4) and data.height//2 <= event.y <= data.height*(3/5):
                 data.singlePlayerMode = True
                 data.customizeMode = True
                 data.startPage = False
 
             # enter the multi player mode
-            elif data.width//4 <= event.x <= data.width*(3/4) and \
-                data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+            elif data.width//4 <= event.x <= data.width*(3/4) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
                 data.multiPlayerMode = True
                 data.customizeMode = True
                 data.startPage = False
 
             # exit button
-            elif data.width*(5/6) <= event.x <= data.width*(29/30) and \
-                data.height*(9/10) <= event.y <= data.height*(29/30):
+            elif data.width*(5/6) <= event.x <= data.width*(29/30) and data.height*(9/10) <= event.y <= data.height*(29/30):
                 sys.exit()
 
             # clear mouse position after each manipulation
@@ -115,7 +115,6 @@ class UI(object):
 
             elif data.width*(3/8) <= event.x <= data.width*(5/8) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
                 self.resetGameBoard(data)
-                print("inGame!")
                 if data.singlePlayerMode: data.levelSelectionMode = True
                 else: data.inGame = True
                 data.customizeMode = False
@@ -153,11 +152,42 @@ class UI(object):
         #     event.x, event.y = None, None
 
         elif data.inGame:
+            player = data.players[data.playeridx]
+            allLegalPos = []
+            origPos = None
             row, col = self.getCell(event.x, event.y, data)
-            # select this (row, col) unless it is selected
-            if data.selection == (row, col): data.selection = (-1, -1)
-            else: data.selection = (row, col)
+            if data.selectedPos == (-1, -1): 
+                data.selectedPos = int(row), int(col)
+                data.putPos = (-1, -1)
+            else: 
+                data.selectedPos = (-1, -1)
+                data.putPos = int(row), int(col)
 
+            print("data.selectedPos: ", data.selectedPos)
+            print("data.putPos: ", data.putPos)
+            print("player: ", player)
+
+            if data.selectedPos == (-1, -1) and data.putPos == (-1, -1):
+                pass   
+            elif data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
+                allLegalPos = self.GameBoard.getLegalPos(data.selectedPos)
+                print("allLegalPos:", allLegalPos)
+                origPos = data.selectedPos
+            elif data.selectedPos == (-1, -1) and data.putPos != (-1, -1):
+                if data.putPos == origPos: pass # unselect/reselect piece
+                elif data.putPos in allLegalPos: 
+                    self.GameBoard.step(player, origPos, data.putPos) # move the piece
+                    data.playeridx += 1 # switch player
+                    data.playeridx %= len(data.players)
+                # reset
+                allLegalPos = []
+                origPos = None
+            else: # should not reach here
+                print("error")
+                assert(False)
+
+            self.GameBoard.printBoard()
+            print("\n")
         if data.settingsMode:
             pass # TODO
 
@@ -184,97 +214,67 @@ class UI(object):
                  if int(event.keysym) in range(2, 4):
                     # data.__ = int(event.keysym) # TODO
                     pass
+
         # in game mode
         if data.inGame:
             # pause the game (can be retrieved)
             if event.keysym == "p":
                 data.gamePaused = not data.gamePaused 
 
-            # making moves based on the user's pressing keys
-            if not self.GameBoard.GameOver():
-                canMove = False
-                if data.gamePaused: 
-                    print("the game is paused now! you cannot move until the game is unpaused")
-                else:
-                    direction = event.keysym
-                    if direction == "Up": 
-                        canMove = self.GameBoard.moveUp()
-                    elif direction == "Down":
-                        canMove = self.GameBoard.moveDown()
-                    elif direction == "Left":
-                        canMove = self.GameBoard.moveLeft()
-                    elif direction == "Right":
-                        canMove = self.GameBoard.moveRight()
-
-                    # add a new number after each legal move
-                    if canMove: 
-                        data.newTileIndex, data.newTileNum = self.GameBoard.addNewTile() 
-                        print("data.newTileIndex: ", data.newTileIndex)
-                    else: print("cannot move in this direction") 
-                    self.GameBoard.printBoard()
-                data.board = self.GameBoard.board
-                data.finishAdding = False # set to False for next move
-
-            else: 
-                if self.GameBoard.contains2048(): data.reach2048 = True
-                else: data.cannotMove = True
-                data.inGame = False
-                print("Game Over!")
-
         else:
             assert(not data.inGame)
             # restart the game only when the current game is over
-            if event.keysym == "r" :
+            if event.keysym == "r":
                 data.inGame = True
                 self.resetGameBoard(data)
 
-                # for multi-player mode, directly return to the start page
-                if data.multiPlayerMode: self.init(data) 
+            # press "b" to return back to the home page after game is over
+            if event.keysym == "b": self.init(data) 
 
 ## Graphic drawing functions below
     # home page
     def drawStartPage(self, canvas, data):
-        canvas.create_rectangle(0, 0, data.width, data.height, fill = "VioletRed1")
-        canvas.create_image(data.width//2, data.height//2, image = data.homePageImage)
+        canvas.create_rectangle(0, 0, data.width, data.height, fill="VioletRed1")
+        canvas.create_image(data.width//2, data.height//2, image=data.homePageImage)
         
         # draw buttons and icons
-        canvas.create_text(data.width//2, data.height//8, text = "VIRUS", fill = "#64DD17", font = "Chalkduster 75 bold" )
-        canvas.create_text(data.width//2, data.height//4, text = "INFECTION", fill = "light coral", font = "Chalkduster 75 bold" )    
-        canvas.create_text(data.width//2, 3*(data.height//8), text = "GAME", fill = "green yellow", font = "Chalkduster 75 bold" )                                        
-        canvas.create_image(data.width*(7/8), data.height*(1/8), image = data.virus1Image)
-        canvas.create_image(data.width*(1/8), data.height*(3/8), image = data.virus1Image)
-        canvas.create_image(data.width*(1/8), data.height*(1/8), image = data.pillsImage)
-        canvas.create_image(data.width*(7/8), data.height*(3/8), image = data.pillsImage)
+        canvas.create_text(data.width//2, data.height//8, text="VIRUS", fill="#64DD17", font="Chalkduster 75 bold" )
+        canvas.create_text(data.width//2, data.height//4, text="INFECTION", fill="light coral", font="Chalkduster 75 bold")    
+        canvas.create_text(data.width//2, 3*(data.height//8), text="GAME", fill="green yellow", font="Chalkduster 75 bold")                                        
+        canvas.create_image(data.width*(7/8), data.height*(1/8), image=data.virus1Image) # TODO: change to exhibit all 4 types of pieces after getting the images
+        canvas.create_image(data.width*(1/8), data.height*(3/8), image=data.virus1Image)
+        canvas.create_image(data.width*(1/8), data.height*(1/8), image=data.pillsImage)
+        canvas.create_image(data.width*(7/8), data.height*(3/8), image=data.pillsImage)
 
         # single player mode button
-        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(11/20), text = "Single Player", font = "Arial 40 bold")
+        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(11/20), text="Single Player", font="Arial 40 bold")
 
         # multi-player mode button
-        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(13/20+1/30), text = "MultiPlayer", font = "Arial 40 bold")
+        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(13/20+1/30), text="MultiPlayer", font="Arial 40 bold")
 
         # settings button
-        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Settings", font = "Arial 40 bold")
+        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Settings", font="Arial 40 bold")
 
         # quit button
-        canvas.create_rectangle(data.width*(5/6), data.height*(9/10), data.width*(29/30), data.height*(29/30), fill = "light grey")
-        canvas.create_text(data.width*(9/10), data.height*(14/15), text = "Quit", font = "Arial 30 bold")
+        canvas.create_rectangle(data.width*(5/6), data.height*(9/10), data.width*(29/30), data.height*(29/30), fill="light grey")
+        canvas.create_text(data.width*(9/10), data.height*(14/15), text="Quit", font="Arial 30 bold")
 
     # customize size/player page
     def drawCustomizePage(self, canvas, data):
-        canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
-        canvas.create_text(data.width//2, data.height//4, text = "Select Your Size/# of Players Here!", font = "Arial 45 bold", fill = "purple")
+        canvas.create_rectangle(0, 0, data.width, data.height, fill="cyan")
+        canvas.create_text(data.width//2, data.height//4, text="Select Your Size/# of Players Here!", font="Arial 45 bold", fill="purple")
 
         # size (5-10) and number of players (2-4) TODO
-        canvas.create_text(data.width//4, data.height*(11/20), text = "Board Size(Width):", font = "Arial 45")
+        canvas.create_text(data.width//4, data.height*(11/20), text="Board Size(Width):", font="Arial 45")
         if data.selectingBoardSize:
-            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill = "light goldenrod")
+            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill="light goldenrod")
         else:
-            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
-        canvas.create_text(data.width*(5/8), data.height*(11/20), text = data.size, font = "Arial 35")
-        canvas.create_text(data.width*(7/8), data.height*(11/20), text = "(5-10)", font = "Arial 35")    
+            canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill="lemon chiffon")
+        canvas.create_text(data.width*(5/8), data.height*(11/20), text=str(data.size), font="Arial 35")
+        canvas.create_text(data.width*(7/8), data.height*(11/20), text="(5-10)", font="Arial 35")    
 
         # finish button
         canvas.create_rectangle(data.width*(3/8), data.height*(7/10+1/15), data.width*(5/8), data.height*(4/5+1/15), fill = "lemon chiffon")
@@ -346,56 +346,54 @@ class UI(object):
 
     def drawBoard(self, canvas, data):
         canvas.create_rectangle(0, 0, data.width, data.height, fill="#C62828")
-        for row in range(data.size):
-            for col in range(data.size):
-                # background 
-                x0, y0, x1, y1 = self.getCellBounds(row, col, data)
-                if (data.selection == (row, col)) and \
-                    (isLegalMove(data) or isLegalJump(data)):
-                    color = "#76FF03"
-                elif (data.selection == (row, col)) and \
-                    data.board[row][col] in ["p", 1]:
-                    color = "#9575CD"
-                elif (data.selection == (row, col)) and not \
-                    (isLegalMove(data) or isLegalJump(data)):
-                    color = "#ECEFF1"
-                else:
-                    color = "#EF9A9A"
-                canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3)
 
-                # pieces (pills or viruses)
-                imageX = col*data.cellWidth + data.cellWidth//2 + data.margin
-                imageY = row*data.cellHeight + data.cellWidth//2 + data.margin
-                if data.board[row][col] == 0: canvas.create_image(imageX, imageY, image=data.pillsImage)
-                elif data.board[row][col] == 1: canvas.create_image(imageX, imageY, image=data.virus1Image)
+        # selecting 
+        if data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
+            allLegalPos = self.GameBoard.getLegalPos(data.selectedPos)
+            for row in range(data.size):
+                for col in range(data.size):
+                    # background 
+                    x0, y0, x1, y1 = self.getCellBounds(row, col, data)
+                    if (row, col) == data.selectedPos: color = "#9575CD"
+                    elif (row, col) in allLegalPos: color = "#76FF03"
+                    else: color = "#EF9A9A"
+                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3) 
+
+                    # pieces (pills or viruses)
+                    imageX = col*data.cellWidth + data.cellWidth//2 + data.margin
+                    imageY = row*data.cellHeight + data.cellWidth//2 + data.margin
+                    if data.board[row][col] == 0: canvas.create_image(imageX, imageY, image=data.pillsImage)
+                    elif data.board[row][col] == 1: canvas.create_image(imageX, imageY, image=data.virus1Image)
+
+        # moving
+        # elif data.selectedPos == (-1, -1) and data.putPos != (-1, -1):
+        else:
+            for row in range(data.size):
+                for col in range(data.size):
+                    # background 
+                    x0, y0, x1, y1 = self.getCellBounds(row, col, data)
+                    color = "#EF9A9A"
+                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3) 
+
+                    # pieces (pills or viruses)
+                    imageX = col*data.cellWidth + data.cellWidth//2 + data.margin
+                    imageY = row*data.cellHeight + data.cellWidth//2 + data.margin
+                    if data.board[row][col] == 0: canvas.create_image(imageX, imageY, image=data.pillsImage)
+                    elif data.board[row][col] == 1: canvas.create_image(imageX, imageY, image=data.virus1Image)
 
         # game over page  
         def drawGameOverPage(self, canvas, data):
-            # reach 2048
-            if data.reach2048: 
-                canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EEEBE9")
-                canvas.create_text(data.width / 2, data.height * 0.25, \
-                       text = "Game Score: "+ str(self.GameBoard.score), \
-                       font = "Arial 30 bold", fill = "purple")
-                canvas.create_text(data.width / 2, data.height / 2, \
-                                   text = "Congratulations!", \
-                                   font = "Arial 50 bold", fill = "red")
-                canvas.create_text(data.width / 2, data.height * 0.6, \
-                                   text = "you get 2048 and WIN!", \
-                                   font = "Arial 50 bold", fill = "red")
-
-            # cannot have any legal moves before reach 2048
-            elif data.cannotMove:
-                canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EEEBE9")
-                canvas.create_text(data.width / 2, data.height / 2, \
-                                   text = "You LOSE", \
-                                   font = "Arial 50 bold", fill = "black")
-                canvas.create_text(data.width / 2, data.height * 0.25, \
-                       text = "Game Score: "+ str(self.GameBoard.score), \
-                       font = "Arial 30 bold", fill = "purple")
-                canvas.create_text(data.width / 2, data.height * 0.75, \
-                       text = "press 'r' to restart", \
-                       font = "Arial 30 bold", fill = "purple")
+            canvas.create_rectangle(0, 0, data.width, data.height, fill="cyan")
+            if data.winningPlayer == -1:
+                canvas.create_text(data.width//2, data.height*(5/8), text="Tie!", font="Arial 60 bold")
+            elif data.winningPlayer == 0:
+                canvas.create_image(data.width//2, data.height//2, image=data.PillsWinBackgroundImage)
+                canvas.create_text(data.width//2, data.height*(5/8), text="Pills win!", font="Arial 60 bold", fill="#388E3C")
+            elif data.winningPlayer == 1:
+                canvas.create_image(data.width//2, data.height//2, image=data.Virus1WinBackgroundImage) 
+                canvas.create_text(data.width//2, data.height*(5/8), text="Virus 1 win!", font="Arial 60 bold", fill="#388E3C")
+            canvas.create_text(data.width//2, data.height*(3/8), text="GAME OVER!", font="Chalkduster 75 bold", fill="#D50000")   
+            canvas.create_text(data.width//2, data.height*(7/8), text="Press 'r' to start again", font="Arial 35", fill="#BA68C8") 
 
     def redrawAll(self, canvas, data):
         # start page
