@@ -93,22 +93,26 @@ class Board(object):
                 if self.winner == -1: print("Tie!")
                 else: print("winner is %d" % self.winner)
 
+    def getNumPiecesEachPlayer(self):
+        numPiecesEachPlayer = {}
+        for p in range(-1, len(self.players)): numPiecesEachPlayer[p] = 0 # include empty tiles
+        for i in range(self.size):
+            for j in range(self.size):
+                numPiecesEachPlayer[self.board[i][j]] += 1
+        return numPiecesEachPlayer
+
     def isGameOver(self):
         '''
         If the board has no empty tiles left, or only one type of pieces left on board, or every pieces does not have legal moves, 
         then the game is over.
         Note: One piece that does not have legal moves left does not mean game over--the other piece(s) may move until the board is full
         '''
-        numEmptyTiles = 0
-        numPiecesEachPlayer = [0]*len(self.players) # length equals to number of players
-        for i in range(self.size):
-            for j in range(self.size):
-                if self.board[i][j] == self.empty: numEmptyTiles += 1
-                else: numPiecesEachPlayer[self.board[i][j]] += 1
+        numPiecesEachPlayer = self.getNumPiecesEachPlayer()
 
         winnerPieces, winner = -1, -1
-        if numEmptyTiles == 0: # no empty tiles
-            if all(num == numPiecesEachPlayer[0] for num in numPiecesEachPlayer): self.winner = winner # tie
+        if numPiecesEachPlayer[-1] == 0: # no empty tiles
+            del numPiecesEachPlayer[-1]
+            if all(numPiecesEachPlayer[p] == numPiecesEachPlayer[0] for p in numPiecesEachPlayer): self.winner = winner # tie
             else:
                 for p in self.players:
                     if (numPiecesEachPlayer[p] > winnerPieces):

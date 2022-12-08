@@ -6,7 +6,7 @@ class Game(object):
         self.GameUI = UI()
 
     def runVirusInfectionGame(self):
-        self.GameUI.runGame(800, 800)
+        self.GameUI.runGame(900, 900)
 
 if __name__ == "__main__":
     Game().runVirusInfectionGame()

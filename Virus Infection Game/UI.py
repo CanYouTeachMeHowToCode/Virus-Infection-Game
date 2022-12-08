@@ -15,12 +15,9 @@ class UI(object):
         data.players = self.GameBoard.players
         data.playeridx = 0 
         data.board = self.GameBoard.board
-        data.margin = 10 # margin around the board
-        data.cellSize = (data.width - data.margin * 2) / data.size
-        data.boardWidth  = data.width - 2*data.margin
-        data.boardHeight = data.height - 2*data.margin
-        data.cellWidth  = data.boardWidth / data.size
-        data.cellHeight = data.boardHeight / data.size
+        data.margin = 20 # margin around the board
+        data.boardSize = data.width - 2*data.margin
+        data.cellSize = data.boardSize / data.size
 
         # home page image
         scaleWidth, scaleHeight = 3, 3
@@ -30,10 +27,10 @@ class UI(object):
         data.homePageImage = data.homePageImage.zoom(scaleWidth, scaleHeight)
 
         # virus win background image
-        data.Virus1WinBackgroundImageWidth = data.width
-        data.Virus1WinBackgroundImageHeight = data.height
-        data.Virus1WinBackgroundImage = PhotoImage(file="Virus1WinBackground.gif")
-        data.Virus1WinBackgroundImage = data.Virus1WinBackgroundImage.zoom(scaleWidth, scaleHeight)
+        data.VirusWinBackgroundImageWidth = data.width
+        data.VirusWinBackgroundImageHeight = data.height
+        data.VirusWinBackgroundImage = PhotoImage(file="VirusWinBackground.gif") 
+        data.VirusWinBackgroundImage = data.VirusWinBackgroundImage.zoom(scaleWidth, scaleHeight)
 
         # pills win background image
         data.PillsWinBackgroundImageWidth = data.width
@@ -42,9 +39,9 @@ class UI(object):
         data.PillsWinBackgroundImage = data.PillsWinBackgroundImage.zoom(scaleWidth, scaleHeight)
 
         # pills and viruses image
-        data.pillsImage = PhotoImage(file="pills.gif", width=100, height=100)
-        data.virus1Image = PhotoImage(file="Virus1.gif", width=100, height=100)
-        
+        data.pillsImage = PhotoImage(file="pills.gif") # TODO: try rescale the image size based on cell size (can be done later)
+        data.virus1Image = PhotoImage(file="Virus1.gif")
+
         # start page
         data.startPage = True
         data.singlePlayerMode = False
@@ -78,7 +75,8 @@ class UI(object):
     def resetGameBoard(self, data):
         self.GameBoard = Board(data.size)
         data.board = self.GameBoard.board
-        data.cellSize = (data.width - 2*data.margin) / data.size
+        data.boardSize = data.width - 2*data.margin
+        data.cellSize = data.boardSize / data.size
 
 ## Controller functions below
     def mousePressed(self, event, data):
@@ -274,7 +272,7 @@ class UI(object):
         canvas.create_text(data.width//2, data.height//4, text="Select Your Size/# of Players Here!", font="Arial 45 bold", fill="purple")
 
         # size (5-10) and number of players (2-4) TODO
-        canvas.create_text(data.width//4, data.height*(11/20), text="Board Size(Width):", font="Arial 45")
+        canvas.create_text(data.width//4, data.height*(11/20), text="Board Size:", font="Arial 45")
         if data.selectingBoardSize:
             canvas.create_rectangle(data.width//2, data.height//2, data.width*(3/4), data.height*(3/5), fill="light goldenrod")
         else:
@@ -283,50 +281,55 @@ class UI(object):
         canvas.create_text(data.width*(7/8), data.height*(11/20), text="(5-10)", font="Arial 35")    
 
         # finish button
-        canvas.create_rectangle(data.width*(3/8), data.height*(7/10+1/15), data.width*(5/8), data.height*(4/5+1/15), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Finish!", font = "Arial 40")
+        canvas.create_rectangle(data.width*(3/8), data.height*(7/10+1/15), data.width*(5/8), data.height*(4/5+1/15), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Finish!", font="Arial 40")
 
     # AI mode level selection page
     def drawLevelSelectionPage(self, canvas, data):
         canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
-        canvas.create_text(data.width//2, data.height//4, text = "Select a Level!", font = "Arial 55 bold", fill = "purple")
+        canvas.create_text(data.width//2, data.height//4, text = "Select a Level!", font = "Arial 55 bold", fill="purple")
 
         # easy mode
-        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(11/20), text = "Easy", font = "Arial 35 bold")
+        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(11/20), text="Easy", font="Arial 35 bold")
 
         # normal mode
-        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(13/20+1/30), text = "Normal", font = "Arial 35 bold")
+        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
 
         # hard mode
-        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(3/4+1/15), text = "Hard", font = "Arial 35 bold")
+        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
 
     def drawSettingsPage(self, canvas, data):
-        canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
-        canvas.create_text(data.width//2, data.height//4, text = "Press the button below \n to start/stop the music", font = "Arial 55 bold", fill = "purple")
+        canvas.create_rectangle(0, 0, data.width, data.height, fill="cyan")
+        canvas.create_text(data.width//2, data.height//4, text="Press the button below \n to start/stop the music", font="Arial 55 bold", fill="purple")
 
         # start button
-        canvas.create_rectangle(data.width*(3/8), data.height*(2/5), data.width*(5/8), data.height//2, fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(9/20), text = "Start", font = "Arial 40 bold")
+        canvas.create_rectangle(data.width*(3/8), data.height*(2/5), data.width*(5/8), data.height//2, fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(9/20), text="Start", font="Arial 40 bold")
 
         # stop button
-        canvas.create_rectangle(data.width*(3/8), data.height*(11/20), data.width*(5/8), data.height*(13/20), fill = "lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(3/5), text = "Stop", font = "Arial 40 bold")
-        canvas.create_text(data.width//2, data.height*(3/4), text = "Press 'b' to return back to home page", font = "Arial 40 bold")
+        canvas.create_rectangle(data.width*(3/8), data.height*(11/20), data.width*(5/8), data.height*(13/20), fill="lemon chiffon")
+        canvas.create_text(data.width//2, data.height*(3/5), text="Stop", font="Arial 40 bold")
+        canvas.create_text(data.width//2, data.height*(3/4), text="Press 'b' to return back to home page", font="Arial 40 bold")
 
     # In game page
     def drawGamePage(self, canvas, data):
-        canvas.create_rectangle(0, 0, data.width, data.height, fill = "#EFEBE9")
+        numPiecesEachPlayer = self.GameBoard.getNumPiecesEachPlayer()
+        del numPiecesEachPlayer[-1]
+        if all(numPiecesEachPlayer[p] == numPiecesEachPlayer[0] for p in numPiecesEachPlayer): # tie
+            canvas.create_rectangle(0, 0, data.width, data.height, fill="#EFEBE9")
+        elif max(numPiecesEachPlayer, key=numPiecesEachPlayer.get) == 0: # pills ahead
+            canvas.create_rectangle(0, 0, data.width, data.height, fill="#B2FF59")
+        else: # viruses ahead
+            canvas.create_rectangle(0, 0, data.width, data.height, fill="#E64A19")
         self.drawBoard(canvas, data)
 
         # Game paused
         if data.gamePaused: 
-            canvas.create_rectangle(0, data.height/3, data.width, \
-                                            data.height*(2/3), fill = "gold")
-            canvas.create_text(data.width/2, data.height/2, text = "Game Paused!",\
-                                font = "TimesNewRoman 35 bold", fill = "red")
+            canvas.create_rectangle(0, data.height/3, data.width, data.height*(2/3), fill="gold")
+            canvas.create_text(data.width/2, data.height/2, text="Game Paused!", font="TimesNewRoman 35 bold", fill="red")
 
     # helper functions for drawing the game board    
     def pointInBoard(self, x, y, data):
@@ -336,23 +339,19 @@ class UI(object):
     def getCell(self, x, y, data):
         # return (row, col) in which (x, y) occurred or (-1, -1) if the point is outside the board.
         if not self.pointInBoard(x, y, data): return -1, -1
-        row = (y - data.margin) // data.cellHeight
-        col = (x - data.margin) // data.cellWidth
+        row = (y - data.margin) // data.cellSize
+        col = (x - data.margin) // data.cellSize
         return row, col
 
     def getCellBounds(self, row, col, data):
         # returns (x0, y0, x1, y1) corners/bounding box of given cell in board
-        columnWidth = data.boardWidth / data.size
-        rowHeight = data.boardHeight / data.size
-        x0 = data.margin + col * columnWidth
-        x1 = data.margin + (col+1) * columnWidth
-        y0 = data.margin + row * rowHeight
-        y1 = data.margin + (row+1) * rowHeight
+        x0 = data.margin + col * data.cellSize
+        x1 = data.margin + (col+1) * data.cellSize
+        y0 = data.margin + row * data.cellSize
+        y1 = data.margin + (row+1) * data.cellSize
         return x0, y0, x1, y1
 
     def drawBoard(self, canvas, data):
-        canvas.create_rectangle(0, 0, data.width, data.height, fill="#C62828")
-
         # selecting 
         if data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
             isThisPlayerTurn = data.board[data.selectedPos[0]][data.selectedPos[1]] == data.players[data.playeridx]
@@ -365,27 +364,26 @@ class UI(object):
                     if isThisPlayerTurn:
                         if (row, col) == data.selectedPos: color = "#9575CD"
                         elif (row, col) in allLegalPos: color = "#76FF03"
-                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3) 
+                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3, outline='#C62828') 
 
                     # pieces (pills or viruses)
-                    imageX = col*data.cellWidth + data.cellWidth//2 + data.margin
-                    imageY = row*data.cellHeight + data.cellWidth//2 + data.margin
+                    imageX = col*data.cellSize + data.cellSize//2 + data.margin
+                    imageY = row*data.cellSize + data.cellSize//2 + data.margin
                     if data.board[row][col] == 0: canvas.create_image(imageX, imageY, image=data.pillsImage)
                     elif data.board[row][col] == 1: canvas.create_image(imageX, imageY, image=data.virus1Image)
 
         # moving
-        # elif data.selectedPos == (-1, -1) and data.putPos != (-1, -1):
         else:
             for row in range(data.size):
                 for col in range(data.size):
                     # background 
                     x0, y0, x1, y1 = self.getCellBounds(row, col, data)
                     color = "#EF9A9A"
-                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3) 
+                    canvas.create_rectangle(x0, y0, x1, y1, fill=color, width=3, outline='#C62828') 
 
                     # pieces (pills or viruses)
-                    imageX = col*data.cellWidth + data.cellWidth//2 + data.margin
-                    imageY = row*data.cellHeight + data.cellWidth//2 + data.margin
+                    imageX = col*data.cellSize + data.cellSize//2 + data.margin
+                    imageY = row*data.cellSize + data.cellSize//2 + data.margin
                     if data.board[row][col] == 0: canvas.create_image(imageX, imageY, image=data.pillsImage)
                     elif data.board[row][col] == 1: canvas.create_image(imageX, imageY, image=data.virus1Image)
 
@@ -396,12 +394,13 @@ class UI(object):
             canvas.create_text(data.width//2, data.height*(5/8), text="Tie!", font="Arial 60 bold")
         elif data.winner == 0:
             canvas.create_image(data.width//2, data.height//2, image=data.PillsWinBackgroundImage)
-            canvas.create_text(data.width//2, data.height*(5/8), text="Pills win!", font="Arial 60 bold", fill="#388E3C")
+            canvas.create_text(data.width//2, data.height*(5/8), text="Pills Win!", font="Arial 60 bold", fill="#388E3C")
         elif data.winner == 1:
-            canvas.create_image(data.width//2, data.height//2, image=data.Virus1WinBackgroundImage) 
-            canvas.create_text(data.width//2, data.height*(5/8), text="Virus 1 win!", font="Arial 60 bold", fill="#388E3C")
+            canvas.create_image(data.width//2, data.height//2, image=data.VirusWinBackgroundImage) 
+            canvas.create_text(data.width//2, data.height*(5/8), text="Virus Win!", font="Arial 60 bold", fill="#388E3C")
         canvas.create_text(data.width//2, data.height*(3/8), text="GAME OVER!", font="Chalkduster 75 bold", fill="#D50000")   
-        canvas.create_text(data.width//2, data.height*(7/8), text="Press 'r' to start again", font="Arial 35", fill="#BA68C8") 
+        canvas.create_text(data.width//2, data.height*(13/16), text="Press 'r' to start again", font="Arial 35", fill="#BA68C8") 
+        canvas.create_text(data.width//2, data.height*(7/8), text="Press 'b' to back to home page", font="Arial 35", fill="#BA68C8") 
 
     def redrawAll(self, canvas, data):
         # start page
