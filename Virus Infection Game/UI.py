@@ -129,7 +129,7 @@ class UI(object):
             event.x, event.y = None, None
 
         ## uncomment this part until AI part finished
-        # # level selection mode (only applicable for AI mode)
+        # # level selection mode (only applicable for single player (AI) mode)
         # if data.levelSelectionMode:
         #     # easy level
         #     if event.x in range(data.width//4, int(data.width*(3/4))) and \

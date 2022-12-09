@@ -1,10 +1,5 @@
 # Virus Infection Game Board
 
-import string
-import copy
-import random
-import sys
-
 class Board(object):
     def __init__(self, size=8, numPlayers=2):
         # size default set to 8, but can be customized (from 5 to 10)
@@ -46,7 +41,7 @@ class Board(object):
                         and 0 <= pos[1]+dcol < self.size and pos[1]+dcol == newPos[1]: return True
             return False
 
-    def getLegalPos(self, pos): # may be useful later in UI to (click->show legal position)
+    def getLegalPos(self, pos):
         assert(self.board[pos[0]][pos[1]] != -1) # must have a piece there
         legalPos = []
         for i in range(max(pos[0]-2, 0), min(pos[0]+3, self.size)):
@@ -108,7 +103,6 @@ class Board(object):
         Note: One piece that does not have legal moves left does not mean game over--the other piece(s) may move until the board is full
         '''
         numPiecesEachPlayer = self.getNumPiecesEachPlayer()
-        print("numPiecesEachPlayer:", numPiecesEachPlayer)
         winnerPieces, winner = -1, -1
         if numPiecesEachPlayer[-1] == 0: # no empty tiles
             del numPiecesEachPlayer[-1]
