@@ -108,7 +108,7 @@ class Board(object):
         Note: One piece that does not have legal moves left does not mean game over--the other piece(s) may move until the board is full
         '''
         numPiecesEachPlayer = self.getNumPiecesEachPlayer()
-
+        print("numPiecesEachPlayer:", numPiecesEachPlayer)
         winnerPieces, winner = -1, -1
         if numPiecesEachPlayer[-1] == 0: # no empty tiles
             del numPiecesEachPlayer[-1]
@@ -121,9 +121,10 @@ class Board(object):
                 self.winner = winner
             return True
         else: 
+            del numPiecesEachPlayer[-1]
             # only one piece left
             for p in self.players:
-                if numPiecesEachPlayer[p] == sum(numPiecesEachPlayer): 
+                if numPiecesEachPlayer[p] == sum(numPiecesEachPlayer.values()): 
                     self.winner = p
                     return True
 
