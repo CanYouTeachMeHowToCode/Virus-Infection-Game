@@ -11,14 +11,18 @@ class AI(object):
         self.player = player
 
     def move(self):
-        pos, newPos = None, None
-        if self.level == "easy": pos, newPos = self.easyAIMove()
-        elif self.level == "medium": pos, newPos = self.mediumAIMove()
-        elif self.level == "hard" : pos, newPos = self.hardAIMove()
+        action = None
+        if self.level == "easy": action = self.easyAIMove()
+        elif self.level == "medium": action = self.mediumAIMove()
+        elif self.level == "hard" : action = self.hardAIMove()
         else: pass
         print("{}'s move: ".format(self.__class__.__name__), end='')
-        print(str(pos) + " to " + str(newPos))
-        self.GameBoard.step(self.player, pos, newPos)
+        if action:
+            pos, newPos = action
+            print(str(pos) + " to " + str(newPos))
+            self.GameBoard.step(self.player, pos, newPos)
+        else: 
+            print("No legal moves now. Skip to next player")
 
     def getAllLegalMoves(self, player): # None -> list[tuple(tuple(int, int))]
         legalMoves = []
@@ -43,8 +47,7 @@ class AI(object):
     # easy level AI: move randomly
     def easyAIMove(self):
         legalMoves = self.getAllLegalMoves(self.player)
-        pos, newPos = random.choice(legalMoves)
-        return pos, newPos
+        return random.choice(legalMoves)
 
     # medium level AI: move based on greedy algorithm
     def mediumAIMove(self):
@@ -126,7 +129,7 @@ class AI(object):
 
 # test
 if __name__ == "__main__":
-    testBoard = Board(size=5, numPlayers=2) # size = 5, two players
+    testBoard = Board(size=8, numPlayers=2) # size = 5, two players
 
     easyPillsAI = AI(testBoard, 0, 0) # easy level AI, AI plays pills
     mediumPillsAI = AI(testBoard, 1, 0) # medium level AI, AI plays pills
@@ -139,7 +142,7 @@ if __name__ == "__main__":
 
     ## Human vs medium AI
     # players = testBoard.players
-    # playerIdx = 0=
+    # playerIdx = 0
     # while not testBoard.isGameOver():
     #     currPlayer = players[playerIdx]
     #     testBoard.printBoard()
@@ -187,14 +190,28 @@ if __name__ == "__main__":
     #     playerIdx %= len(players)
 
 
-    # medium AI vs medium AI
+    # # medium AI vs medium AI
+    # players = testBoard.players
+    # playerIdx = 0
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [mediumPillsAI, mediumVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+
+    # medium AI vs hard AI
     players = testBoard.players
     playerIdx = 0
     while not testBoard.isGameOver():
         currPlayer = players[playerIdx]
         testBoard.printBoard()
         print("currPlayer: " + str(currPlayer))
-        for AI in [mediumPillsAI, mediumVirus1AI]:
+        for AI in [mediumPillsAI, hardVirus1AI]:
             if AI.player == currPlayer: AI.move()
 
         playerIdx += 1
