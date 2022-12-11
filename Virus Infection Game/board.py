@@ -69,12 +69,12 @@ class Board(object):
                         self.board[invadePos[0]][invadePos[1]] = player
 
 
-    def step(self, player, pos, newPos):
+    def step(self, player, pos, newPos, verbose=True):
         assert(self.board[pos[0]][pos[1]] == player) # current player is only allowed to move his/her own pieces
         if self.isLegalMove(pos, newPos):
             self.board[newPos[0]][newPos[1]] = player
             self.invade(player, newPos)
-            if self.isGameOver():
+            if self.isGameOver() and verbose:
                 print("Game Over")
                 if self.winner == -1: print("Tie!")
                 else: print("winner is %d" % self.winner)
@@ -83,7 +83,7 @@ class Board(object):
             self.board[pos[0]][pos[1]] = self.empty
             self.board[newPos[0]][newPos[1]] = player
             self.invade(player, newPos)
-            if self.isGameOver():
+            if self.isGameOver() and verbose:
                 print("Game Over")
                 if self.winner == -1: print("Tie!")
                 else: print("winner is %d" % self.winner)
@@ -127,7 +127,7 @@ class Board(object):
             for _ in self.players: allPosEachPiece.append([])
             for i in range(self.size):
                 for j in range(self.size):
-                    allPosEachPiece[self.board[i][j]].append((i, j))
+                    if self.board[i][j] != -1: allPosEachPiece[self.board[i][j]].append((i, j))
             for allPos in allPosEachPiece: # if any piece have legal moves, then game is still not over
                 for pos in allPos:
                     if self.getLegalPos(pos) != []: return False

@@ -7,81 +7,211 @@ from board import Board
 class AI(object):
     def __init__(self, GameBoard, level, player):
         self.GameBoard = GameBoard
-        self.level = ["easy", "normal", "hard"][level]  
+        self.level = ["easy", "medium", "hard"][level]  
         self.player = player
 
     def move(self):
         pos, newPos = None, None
         if self.level == "easy": pos, newPos = self.easyAIMove()
-        elif self.level == "normal": pos, newPos = self.mediumAIMove()
+        elif self.level == "medium": pos, newPos = self.mediumAIMove()
         elif self.level == "hard" : pos, newPos = self.hardAIMove()
         else: pass
         print("{}'s move: ".format(self.__class__.__name__), end='')
         print(str(pos) + " to " + str(newPos))
         self.GameBoard.step(self.player, pos, newPos)
 
-    def getAllLegalMoves(self): # None -> list[tuple(tuple(int, int))]
+    def getAllLegalMoves(self, player): # None -> list[tuple(tuple(int, int))]
         legalMoves = []
         for row in range(self.GameBoard.size):
             for col in range(self.GameBoard.size):
                 pos = (row, col)
-                if self.GameBoard.board[row][col] == self.player:
+                if self.GameBoard.board[row][col] == player:
                     allLegalPos = self.GameBoard.getLegalPos(pos)
                     for newPos in allLegalPos: legalMoves.append((pos, newPos))
         return legalMoves
 
+    # evaluation function, may have better version
+    def evaluate(self, player): 
+        # greedy, invade as much as possible
+        score = 0
+        for row in range(self.GameBoard.size):
+            for col in range(self.GameBoard.size):
+                if self.GameBoard.board[row][col] == player: score += 1
+                elif self.GameBoard.board[row][col] != player and self.GameBoard.board[row][col] != self.GameBoard.empty: score -= 1
+        return score
+
     # easy level AI: move randomly
     def easyAIMove(self):
-        legalMoves = self.getAllLegalMoves()
+        legalMoves = self.getAllLegalMoves(self.player)
         pos, newPos = random.choice(legalMoves)
         return pos, newPos
 
-    # medium level AI: move based on Minimax algorithm
+    # medium level AI: move based on greedy algorithm
     def mediumAIMove(self):
-        pass
+        legalMoves = self.getAllLegalMoves(self.player)
+        bestScore, bestAction = -float('inf'), None
+        for action in legalMoves:
+            beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
+            pos, newPos = action
+            self.GameBoard.step(self.player, pos, newPos, verbose=False)
+            score = self.evaluate(self.player)
+            self.GameBoard.board = beforeMoveBoard # undo the move
 
-    # hard level AI: move based on Minimax algorithm with alpha-beta pruning
+            if score > bestScore:
+                bestAction = action
+                bestScore = score
+        return bestAction
+
+     # hard level AI: move based on Minimax algorithm with alpha-beta pruning
     def hardAIMove(self):
-        pass
+        return self.maxieMoveAlphaBeta(depth=5)[1]
+
+    def maxieMoveAlphaBeta(self, depth, alpha=-float('inf'), beta=float('inf')):
+        assert(alpha < beta)
+        if self.GameBoard.isGameOver(): return (float('inf'), None) if self.GameBoard.winner == self.player else (float('-inf'), None)
+        elif not depth: return self.evaluate(self.player), None # depth = 0
+        else:
+            bestScore, bestAction = -float('inf'), None
+
+            # get all legal actions for current player and preserve the board
+            legalMoves = self.getAllLegalMoves(self.player)
+            if not legalMoves: return self.evaluate(self.player), None # no legal actions
+
+            for action in legalMoves:
+                beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
+                pos, newPos = action
+                self.GameBoard.step(self.player, pos, newPos, verbose=False)
+                minnieScore, _ = self.minnieMoveAlphaBeta(depth-1, alpha, beta)
+                self.GameBoard.board = beforeMoveBoard # undo the move
+
+                if minnieScore > bestScore:
+                    bestScore = minnieScore
+                    bestAction = action
+                    alpha = max(alpha, bestScore)
+                    if alpha >= beta: return bestScore, bestAction
+            return bestScore, bestAction
+
+    '''
+    If there are more than two players (the current player has more than one enemies), we 
+    assume all these enemies "integrates" to one enemy that try to prevent current player from
+    winning. Therefore, this return back to the miniMax for two players.
+    '''
+
+    def minnieMoveAlphaBeta(self, depth, alpha, beta):
+        assert(alpha < beta)
+        if self.GameBoard.isGameOver(): return (float('-inf'), None) if self.GameBoard.winner != self.player else (float('inf'), None)
+        elif not depth: return sum([self.evaluate(player) for player in self.GameBoard.players if player != self.player]), None # depth = 0
+        else:
+            bestScore, bestAction = float('inf'), None
+
+            # get all legal actions for all other players and preserve the board
+            for player in self.GameBoard.players:
+                if player == self.player: continue
+                legalMoves = self.getAllLegalMoves(player)
+                if not legalMoves: return self.evaluate(player), None # no legal actions
+
+                for action in legalMoves:
+                    beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
+                    pos, newPos = action
+                    self.GameBoard.step(player, pos, newPos, verbose=False)
+                    maxieScore, _ = self.maxieMoveAlphaBeta(depth-1, alpha, beta)
+                    self.GameBoard.board = beforeMoveBoard # undo the move
+
+                    if maxieScore < bestScore:
+                        bestScore = maxieScore
+                        bestAction = action
+                        beta = min(beta, bestScore)
+                        if alpha >= beta: return bestScore, bestAction
+            return bestScore, bestAction
 
 # test
 if __name__ == "__main__":
     testBoard = Board(size=5, numPlayers=2) # size = 5, two players
-    easyVirus1AI = AI(testBoard, 0, 1) # easy level AI, AI players virus 1
+
+    easyPillsAI = AI(testBoard, 0, 0) # easy level AI, AI plays pills
+    mediumPillsAI = AI(testBoard, 1, 0) # medium level AI, AI plays pills
+    hardPillsAI = AI(testBoard, 2, 0) # hard level AI, AI plays pills
+
+    easyVirus1AI = AI(testBoard, 0, 1) # easy level AI, AI plays virus 0
+    mediumVirus1AI = AI(testBoard, 1, 1) # medium level AI, AI plays virus 1
+    hardVirus1AI = AI(testBoard, 2, 1) # hard level AI, AI plays virus 1
+
+
+    ## Human vs medium AI
+    # players = testBoard.players
+    # playerIdx = 0=
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+
+    #     if currPlayer == 0:
+    #         pos = input("Player's turn. \nPlease select a piece.(such as '23'): ") # '23' represents position (2, 3)
+    #         pos = (int(pos[0]), int(pos[1]))
+    #         if pos[0] < 0 or pos[0] >= testBoard.size or pos[1] < 0 or pos[1] >= testBoard.size: # out of bounds
+    #             pos = input("Invalid piece position. Please select another piece.(such as '23'): ")
+    #             pos = (int(pos[0]), int(pos[1]))
+    #         elif testBoard.board[pos[0]][pos[1]] != currPlayer or not testBoard.getLegalPos(pos): # not selecting current player's piece
+    #             pos = input("You cannot move this piece. Please select another piece.(such as '23'): ")
+    #             pos = (int(pos[0]), int(pos[1]))
+
+    #         newPos = input("Please select the point to put your piece.(such as '23'): ")
+    #         newPos = (int(newPos[0]), int(newPos[1]))
+    #         if newPos[0] < 0 or newPos[0] >= testBoard.size or newPos[1] < 0 or newPos[1] >= testBoard.size: # out of bounds
+    #             newPos = input("Invalid piece position. Please select another piece.(such as '23'): ")
+    #             newPos = (int(newPos[0]), int(newPos[1]))
+    #         elif not testBoard.isLegalMove(pos, newPos) and not testBoard.isLegalJump(pos, newPos): # invalid move
+    #             newPos = input("You cannot put your piece here. Please select another piece.(such as '23'): ")
+    #             newPos = (int(newPos[0]), int(newPos[1]))
+
+    #         testBoard.step(currPlayer, pos, newPos)
+
+    #     else: 
+    #         # easyVirus1AI.move()
+    #         mediumVirus1AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+
+    # # easy AI vs medium AI
+    # players = testBoard.players
+    # playerIdx = 0
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [easyPillsAI, mediumVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+
+    # medium AI vs medium AI
     players = testBoard.players
     playerIdx = 0
     while not testBoard.isGameOver():
         currPlayer = players[playerIdx]
         testBoard.printBoard()
-
-        if currPlayer == 0:
-            pos = input("Player's turn. \nPlease select a piece.(such as '23'): ") # '23' represents position (2, 3)
-            pos = (int(pos[0]), int(pos[1]))
-            if pos[0] < 0 or pos[0] >= testBoard.size or pos[1] < 0 or pos[1] >= testBoard.size: # out of bounds
-                pos = input("Invalid piece position. Please select another piece.(such as '23'): ")
-                pos = (int(pos[0]), int(pos[1]))
-            elif testBoard.board[pos[0]][pos[1]] != currPlayer or not testBoard.getLegalPos(pos): # not selecting current player's piece
-                pos = input("You cannot move this piece. Please select another piece.(such as '23'): ")
-                pos = (int(pos[0]), int(pos[1]))
-
-            newPos = input("Please select the point to put your piece.(such as '23'): ")
-            newPos = (int(newPos[0]), int(newPos[1]))
-            if newPos[0] < 0 or newPos[0] >= testBoard.size or newPos[1] < 0 or newPos[1] >= testBoard.size: # out of bounds
-                newPos = input("Invalid piece position. Please select another piece.(such as '23'): ")
-                newPos = (int(newPos[0]), int(newPos[1]))
-            elif not testBoard.isLegalMove(pos, newPos) and not testBoard.isLegalJump(pos, newPos): # invalid move
-                newPos = input("You cannot put your piece here. Please select another piece.(such as '23'): ")
-                newPos = (int(newPos[0]), int(newPos[1]))
-
-            testBoard.step(currPlayer, pos, newPos)
-
-        else: 
-            easyVirus1AI.move()
+        print("currPlayer: " + str(currPlayer))
+        for AI in [mediumPillsAI, mediumVirus1AI]:
+            if AI.player == currPlayer: AI.move()
 
         playerIdx += 1
         playerIdx %= len(players)
 
 
+    # # hard AI vs hard AI
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [mediumPillsAI, mediumVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+    # winners.append(testBoard.winner)
 
         
 
