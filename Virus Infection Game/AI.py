@@ -40,7 +40,7 @@ class AI(object):
         score = 0
         for row in range(self.GameBoard.size):
             for col in range(self.GameBoard.size):
-                if self.GameBoard.board[row][col] == player: score += 1
+                if self.GameBoard.board[row][col] == player: score += 2
                 elif self.GameBoard.board[row][col] != player and self.GameBoard.board[row][col] != self.GameBoard.empty: score -= 1
         return score
 
@@ -67,7 +67,7 @@ class AI(object):
 
      # hard level AI: move based on Minimax algorithm with alpha-beta pruning
     def hardAIMove(self):
-        return self.maxieMoveAlphaBeta(depth=5)[1]
+        return self.maxieMoveAlphaBeta(depth=2)[1]
 
     def maxieMoveAlphaBeta(self, depth, alpha=-float('inf'), beta=float('inf')):
         assert(alpha < beta)
@@ -129,7 +129,7 @@ class AI(object):
 
 # test
 if __name__ == "__main__":
-    testBoard = Board(size=8, numPlayers=2) # size = 5, two players
+    testBoard = Board(size=7, numPlayers=2)
 
     easyPillsAI = AI(testBoard, 0, 0) # easy level AI, AI plays pills
     mediumPillsAI = AI(testBoard, 1, 0) # medium level AI, AI plays pills
@@ -204,31 +204,50 @@ if __name__ == "__main__":
     #     playerIdx %= len(players)
 
 
-    # medium AI vs hard AI
+    # # medium AI vs hard AI
+    # players = testBoard.players
+    # playerIdx = 0
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [mediumPillsAI, hardVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+
+    # # hard AI vs medium AI
+    # players = testBoard.players
+    # playerIdx = 0
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [hardPillsAI, mediumVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
+
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+
+    # hard AI vs hard AI
     players = testBoard.players
     playerIdx = 0
     while not testBoard.isGameOver():
         currPlayer = players[playerIdx]
         testBoard.printBoard()
         print("currPlayer: " + str(currPlayer))
-        for AI in [mediumPillsAI, hardVirus1AI]:
+        for AI in [hardPillsAI, hardVirus1AI]:
             if AI.player == currPlayer: AI.move()
 
         playerIdx += 1
         playerIdx %= len(players)
 
+    
 
-    # # hard AI vs hard AI
-    # while not testBoard.isGameOver():
-    #     currPlayer = players[playerIdx]
-    #     testBoard.printBoard()
-    #     print("currPlayer: " + str(currPlayer))
-    #     for AI in [mediumPillsAI, mediumVirus1AI]:
-    #         if AI.player == currPlayer: AI.move()
-
-    #     playerIdx += 1
-    #     playerIdx %= len(players)
-    # winners.append(testBoard.winner)
+    testBoard.printBoard()
 
         
 
