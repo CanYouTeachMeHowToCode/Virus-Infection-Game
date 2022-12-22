@@ -2,6 +2,7 @@
 
 import random
 import copy
+import numpy as np
 from board import Board
 
 class AI(object):
@@ -40,8 +41,7 @@ class AI(object):
         score = 0
         for row in range(self.GameBoard.size):
             for col in range(self.GameBoard.size):
-                if self.GameBoard.board[row][col] == player: score += 2
-                elif self.GameBoard.board[row][col] != player and self.GameBoard.board[row][col] != self.GameBoard.empty: score -= 1
+                if self.GameBoard.board[row][col] == player: score += 1
         return score
 
     # easy level AI: move randomly
@@ -103,7 +103,7 @@ class AI(object):
     def minnieMoveAlphaBeta(self, depth, alpha, beta):
         assert(alpha < beta)
         if self.GameBoard.isGameOver(): return (float('-inf'), None) if self.GameBoard.winner != self.player else (float('inf'), None)
-        elif not depth: return sum([self.evaluate(player) for player in self.GameBoard.players if player != self.player]), None # depth = 0
+        elif not depth: return np.mean([self.evaluate(player) for player in self.GameBoard.players if player != self.player]), None # depth = 0
         else:
             bestScore, bestAction = float('inf'), None
 
@@ -129,6 +129,7 @@ class AI(object):
 
 # test
 if __name__ == "__main__":
+    # 2 players
     testBoard = Board(size=7, numPlayers=2)
 
     easyPillsAI = AI(testBoard, 0, 0) # easy level AI, AI plays pills
@@ -232,22 +233,57 @@ if __name__ == "__main__":
     #     playerIdx %= len(players)
 
 
-    # hard AI vs hard AI
-    players = testBoard.players
-    playerIdx = 0
-    while not testBoard.isGameOver():
-        currPlayer = players[playerIdx]
-        testBoard.printBoard()
-        print("currPlayer: " + str(currPlayer))
-        for AI in [hardPillsAI, hardVirus1AI]:
-            if AI.player == currPlayer: AI.move()
+    # # hard AI vs hard AI
+    # players = testBoard.players
+    # playerIdx = 0
+    # while not testBoard.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     testBoard.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in [hardPillsAI, hardVirus1AI]:
+    #         if AI.player == currPlayer: AI.move()
 
-        playerIdx += 1
-        playerIdx %= len(players)
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
 
     
 
-    testBoard.printBoard()
+    # testBoard.printBoard()
+
+    ################################################################
+    # more than 2 players
+    testBoard2 = Board(size=8, numPlayers=4)
+
+    AIs = []
+    hardPillsAI = AI(testBoard2, 1, 0) # medium level AI, AI plays pills
+    AIs.append(hardPillsAI)
+    easyVirus1AI = AI(testBoard2, 0, 1) # easy level AI, AI plays virus 1
+    AIs.append(easyVirus1AI)
+    mediumVirus2AI = AI(testBoard2, 1, 2) # medium level AI, AI plays virus 2
+    AIs.append(mediumVirus2AI)
+    hardVirus3AI = AI(testBoard2, 2, 3) # hard level AI, AI plays virus 3
+    AIs.append(hardVirus3AI)
+    # mediumVirus3AI = AI(testBoard2, 1, 3) # medium level AI, AI plays virus 3
+    # AIs.append(mediumVirus3AI)
+
+    players = testBoard2.players
+    playerIdx = 0
+    while not testBoard2.isGameOver():
+        currPlayer = players[playerIdx]
+        numPiecesEachPlayer = testBoard2.getNumPiecesEachPlayer()
+        testBoard2.printBoard()
+        print("currPlayer: " + str(currPlayer))
+        for AI in AIs:
+            if AI.player == currPlayer: 
+                if numPiecesEachPlayer[currPlayer] == 0: # this player is eliminated, so skip its round
+                    print("no pieces left, skip player", currPlayer)
+                elif not AI.getAllLegalMoves(currPlayer): # this player has no legal moves, so skip its round
+                    print("no legal moves, skip player", currPlayer)
+                else: AI.move()
+        playerIdx += 1
+        playerIdx %= len(players)
+
+    testBoard2.printBoard()
 
         
 

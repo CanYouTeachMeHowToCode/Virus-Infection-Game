@@ -78,6 +78,9 @@ class UI(object):
         data.timerDelay = 1000
         data.timeCounter = 0
 
+        # AI settings
+        data.AI = None
+
     def resetGameBoard(self, data):
         self.GameBoard = Board(size=data.size, numPlayers=len(data.players))
         data.board = self.GameBoard.board
