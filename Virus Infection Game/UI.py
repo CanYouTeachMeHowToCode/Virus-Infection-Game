@@ -68,7 +68,7 @@ class UI(object):
         data.gameOver = False
         data.gamePaused = False
 
-        # In game selection (TODO: implement moving sequence of players--pills first, virus then, aka 每个棋子一次只能走一步)
+        # In game selection
         data.selectedPos = -1, -1
         data.putPos = -1, -1
         data.winner = None
@@ -79,7 +79,8 @@ class UI(object):
         data.timeCounter = 0
 
         # AI settings
-        data.AI = None
+        data.AIs = [] # all AI player object
+        data.AIPlayers = [] # all AI player id
 
     def resetGameBoard(self, data):
         self.GameBoard = Board(size=data.size, numPlayers=len(data.players))
@@ -107,9 +108,6 @@ class UI(object):
             elif data.width*(5/6) <= event.x <= data.width*(29/30) and data.height*(9/10) <= event.y <= data.height*(29/30):
                 sys.exit()
 
-            # clear mouse position after each manipulation
-            event.x, event.y = None, None
-
         # customize size page
         elif data.customizeMode: # can only customize one of them at a time
             # press the "size button" to customize the board size
@@ -128,37 +126,30 @@ class UI(object):
                 else: data.inGame = True
                 data.customizeMode = False
 
-            # clear mouse position after each manipulation
-            event.x, event.y = None, None
-
-        ## uncomment this part until AI part finished
-        # # level selection mode (only applicable for single player (AI) mode)
-        # if data.levelSelectionMode:
-        #     # easy level
-        #     if event.x in range(data.width//4, int(data.width*(3/4))) and \
-        #         event.y in range(data.height//2, int(data.height*(3/5))):
-        #         data.AI = AI(self.GameBoard, 0)
-        #         data.levelSelectionMode = False
-        #         data.inGame = True
+        # level selection mode (only applicable for single player (AI) mode)
+        elif data.levelSelectionMode: # TODO
+            if data.players == 2:
+                # if data.width//2 <= event.x <= data.width*(3/4) and data.height*(2/5) <= event.y <= data.height*(1/2):
+                #     data.AI = AI(self.GameBoard, 0)
+                #     data.levelSelectionMode = False
+                #     data.inGame = True
+                pass
             
-        #     # normal level
-        #     elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-        #         event.y in range(int(data.height*(3/5+1/30)), \
-        #                         int(data.height*(7/10+1/30))):
-        #         data.AI = AI(self.GameBoard, 1)
-        #         data.levelSelectionMode = False
-        #         data.inGame = True
+            # # normal level
+            # elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+            #     event.y in range(int(data.height*(3/5+1/30)), \
+            #                     int(data.height*(7/10+1/30))):
+            #     data.AI = AI(self.GameBoard, 1)
+            #     data.levelSelectionMode = False
+            #     data.inGame = True
 
-        #     # hard level
-        #     elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-        #         event.y in range(int(data.height*(7/10+1/15)), \
-        #                         int(data.height*(4/5+1/15))):
-        #         data.AI = AI(self.GameBoard, 2)
-        #         data.levelSelectionMode = False
-        #         data.inGame = True
-
-        #     # clear mouse position after each manipulation
-        #     event.x, event.y = None, None
+            # # hard level
+            # elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+            #     event.y in range(int(data.height*(7/10+1/15)), \
+            #                     int(data.height*(4/5+1/15))):
+            #     data.AI = AI(self.GameBoard, 2)
+            #     data.levelSelectionMode = False
+            #     data.inGame = True
 
         elif data.inGame:
             player = data.players[data.playeridx]
@@ -168,45 +159,53 @@ class UI(object):
                 data.playeridx += 1 # switch player
                 data.playeridx %= len(data.players)
             else:
-                row, col = self.getCell(event.x, event.y, data)
-                if data.selectedPos == (-1, -1): 
-                    data.selectedPos = int(row), int(col)
-                    data.putPos = (-1, -1)
-                else: 
-                    data.selectedPos = (-1, -1)
-                    data.putPos = int(row), int(col)
+                if player in data.AIPlayers:
+                    for AI in AIs:
+                        if AI.player == player: AI.move()
+                else:
+                    row, col = self.getCell(event.x, event.y, data)
+                    if data.selectedPos == (-1, -1): 
+                        data.selectedPos = int(row), int(col)
+                        data.putPos = (-1, -1)
+                    else: 
+                        data.selectedPos = (-1, -1)
+                        data.putPos = int(row), int(col)
 
-                print("data.selectedPos: ", data.selectedPos)
-                print("data.putPos: ", data.putPos)
-                print("player: ", player)
-                if data.selectedPos == (-1, -1) and data.putPos == (-1, -1):
-                    pass   
-                elif data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
-                    if (data.board[data.selectedPos[0]][data.selectedPos[1]] == player): # current player is only allowed to move his/her own pieces
-                        data.origPos = data.selectedPos
-                    else: data.selectedPos = (-1, -1) # not the player's turn, redo the selection
-                elif data.selectedPos == (-1, -1) and data.putPos != (-1, -1):
-                    allLegalPos = self.GameBoard.getLegalPos(data.origPos)
-                    print("data.allLegalPos:", allLegalPos)
-                    if data.putPos in allLegalPos: # each move must be a legal move, otherwise the selection is also cancelled
-                        print("step")
-                        self.GameBoard.step(player, data.origPos, data.putPos) # move the piece
-                        if self.GameBoard.isGameOver(): 
-                            data.gameOver = True
-                            data.inGame = False
-                            data.winner = self.GameBoard.winner
-                        data.playeridx += 1 # switch player
-                        data.playeridx %= len(data.players)
-                        # reset
-                        data.origPos = None
-                else: # should not reach here
-                    print("error")
-                    assert(False)
+                    print("data.selectedPos: ", data.selectedPos)
+                    print("data.putPos: ", data.putPos)
+                    print("player: ", player)
+                    if data.selectedPos == (-1, -1) and data.putPos == (-1, -1):
+                        pass   
+                    elif data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
+                        if (data.board[data.selectedPos[0]][data.selectedPos[1]] == player): # current player is only allowed to move his/her own pieces
+                            data.origPos = data.selectedPos
+                        else: data.selectedPos = (-1, -1) # not the player's turn, redo the selection
+                    elif data.selectedPos == (-1, -1) and data.putPos != (-1, -1):
+                        allLegalPos = self.GameBoard.getLegalPos(data.origPos)
+                        print("data.allLegalPos:", allLegalPos)
+                        if data.putPos in allLegalPos: # each move must be a legal move, otherwise the selection is also cancelled
+                            print("step")
+                            self.GameBoard.step(player, data.origPos, data.putPos) # move the piece
+                            if self.GameBoard.isGameOver(): 
+                                data.gameOver = True
+                                data.inGame = False
+                                data.winner = self.GameBoard.winner
+                            data.playeridx += 1 # switch player
+                            data.playeridx %= len(data.players)
+                            # reset
+                            data.origPos = None
+                    else: # should not reach here
+                        print("error")
+                        assert(False)
 
             self.GameBoard.printBoard()
             print("\n")
+
         if data.settingsMode:
             pass # TODO
+
+        # clear mouse position after each manipulation
+        event.x, event.y = None, None
 
     def keyPressed(self, event, data):
         # press "shift + b" to return back to home page from anywhere
@@ -448,17 +447,6 @@ class UI(object):
 
         # game over page
         elif data.gameOver: self.drawGameOverPage(canvas, data)
-
-    ## uncomment this part until AI part finished
-    # def AImove(self, data):
-    #     print("AI playing")
-    #     print("step %d:" % data.AIstep)
-    #     data.AI.nextMove()
-    #     # update the board after each AI's move
-    #     self.GameBoard.board = data.AI.GameBoard.board 
-    #     self.GameBoard.printBoard()
-    #     data.board = data.AI.GameBoard.board
-    #     data.AIstep += 1
 
     def timerFired(self, data):
         if data.inGame and not data.gameOver and not data.gamePaused:
