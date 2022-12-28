@@ -128,7 +128,7 @@ class UI(object):
 
         # level selection mode (only applicable for single player (AI) mode)
         elif data.levelSelectionMode: # TODO
-            if data.players == 2:
+            if len(data.players) == 2:
                 # if data.width//2 <= event.x <= data.width*(3/4) and data.height*(2/5) <= event.y <= data.height*(1/2):
                 #     data.AI = AI(self.GameBoard, 0)
                 #     data.levelSelectionMode = False
@@ -313,17 +313,101 @@ class UI(object):
         canvas.create_rectangle(0, 0, data.width, data.height, fill = "cyan")
         canvas.create_text(data.width//2, data.height//4, text = "Select a Level!", font = "Arial 55 bold", fill="purple")
 
-        # easy mode
-        canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill="lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(11/20), text="Easy", font="Arial 35 bold")
+        # one virus
+        if len(data.players) == 2:
+            # virus 1
+            canvas.create_image(data.width//2, data.height*(2/5), image=data.virus1Image)
 
-        # normal mode
-        canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill="lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+            # easy mode
+            canvas.create_rectangle(data.width//4, data.height//2, data.width*(3/4), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(11/20), text="Easy", font="Arial 35 bold")
 
-        # hard mode
-        canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill="lemon chiffon")
-        canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+            # normal mode
+            canvas.create_rectangle(data.width//4, data.height*(3/5+1/30), data.width*(3/4), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width//4, data.height*(7/10+1/15), data.width*(3/4), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+
+        # two viruses
+        elif len(data.players) == 3:
+            # virus 1
+            canvas.create_image(data.width*(3/10), data.height*(2/5), image=data.virus1Image)
+
+            # easy mode
+            canvas.create_rectangle(data.width*(3/20), data.height//2, data.width*(9/20), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/10), data.height*(11/20), text="Easy", font="Arial 35 bold")
+
+            # normal mode
+            canvas.create_rectangle(data.width*(3/20), data.height*(3/5+1/30), data.width*(9/20), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/10), data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width*(3/20), data.height*(7/10+1/15), data.width*(9/20), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/10), data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+
+            # virus 2
+            canvas.create_image(data.width*(7/10), data.height*(2/5), image=data.virus2Image)
+
+            # easy mode
+            canvas.create_rectangle(data.width*(11/20), data.height//2, data.width*(17/20), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width*(7/10), data.height*(11/20), text="Easy", font="Arial 35 bold")
+
+            # normal mode
+            canvas.create_rectangle(data.width*(11/20), data.height*(3/5+1/30), data.width*(17/20), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width*(7/10), data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width*(11/20), data.height*(7/10+1/15), data.width*(17/20), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width*(7/10), data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+
+        # three viruses
+        elif len(data.players) == 4:
+            # virus 1
+            canvas.create_image(data.width//4, data.height*(2/5), image=data.virus1Image)
+
+            # easy mode
+            canvas.create_rectangle(data.width*(1/4-1/10), data.height//2, data.width*(1/4+1/10), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width//4, data.height*(11/20), text="Easy", font="Arial 35 bold")
+
+            # normal mode
+            canvas.create_rectangle(data.width*(1/4-1/10), data.height*(3/5+1/30), data.width*(1/4+1/10), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width//4, data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width*(1/4-1/10), data.height*(7/10+1/15), data.width*(1/4+1/10), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width//4, data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+
+            # virus 2
+            canvas.create_image(data.width//2, data.height*(2/5), image=data.virus2Image)
+
+            # easy mode
+            canvas.create_rectangle(data.width*(1/2-1/10), data.height//2, data.width*(1/2+1/10), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(11/20), text="Easy", font="Arial 35 bold")
+
+            # normal mode
+            canvas.create_rectangle(data.width*(1/2-1/10), data.height*(3/5+1/30), data.width*(1/2+1/10), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width*(1/2-1/10), data.height*(7/10+1/15), data.width*(1/2+1/10), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width//2, data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
+
+            # virus 3
+            canvas.create_image(data.width*(3/4), data.height*(2/5), image=data.virus3Image)
+
+            # easy mode
+            canvas.create_rectangle(data.width*(3/4-1/10), data.height//2, data.width*(3/4+1/10), data.height*(3/5), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/4), data.height*(11/20), text="Easy", font="Arial 35 bold")
+
+            # normal mode
+            canvas.create_rectangle(data.width*(3/4-1/10), data.height*(3/5+1/30), data.width*(3/4+1/10), data.height*(7/10+1/30), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/4), data.height*(13/20+1/30), text="Normal", font="Arial 35 bold")
+
+            # hard mode
+            canvas.create_rectangle(data.width*(3/4-1/10), data.height*(7/10+1/15), data.width*(3/4+1/10), data.height*(4/5+1/15), fill="lemon chiffon")
+            canvas.create_text(data.width*(3/4), data.height*(3/4+1/15), text="Hard", font="Arial 35 bold")
 
     def drawSettingsPage(self, canvas, data):
         canvas.create_rectangle(0, 0, data.width, data.height, fill="cyan")
