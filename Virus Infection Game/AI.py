@@ -25,16 +25,6 @@ class AI(object):
         else: 
             print("No legal moves now. Skip to next player")
 
-    def getAllLegalMoves(self, player): # None -> list[tuple(tuple(int, int))]
-        legalMoves = []
-        for row in range(self.GameBoard.size):
-            for col in range(self.GameBoard.size):
-                pos = (row, col)
-                if self.GameBoard.board[row][col] == player:
-                    allLegalPos = self.GameBoard.getLegalPos(pos)
-                    for newPos in allLegalPos: legalMoves.append((pos, newPos))
-        return legalMoves
-
     # evaluation function, may have better version
     def evaluate(self, player): 
         # greedy, invade as much as possible
@@ -46,12 +36,12 @@ class AI(object):
 
     # easy level AI: move randomly
     def easyAIMove(self):
-        legalMoves = self.getAllLegalMoves(self.player)
+        legalMoves = self.GameBoard.getAllLegalMoves(self.player)
         return random.choice(legalMoves)
 
     # medium level AI: move based on greedy algorithm
     def mediumAIMove(self):
-        legalMoves = self.getAllLegalMoves(self.player)
+        legalMoves = self.GameBoard.getAllLegalMoves(self.player)
         bestScore, bestAction = -float('inf'), None
         for action in legalMoves:
             beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
@@ -77,7 +67,7 @@ class AI(object):
             bestScore, bestAction = -float('inf'), None
 
             # get all legal actions for current player and preserve the board
-            legalMoves = self.getAllLegalMoves(self.player)
+            legalMoves = self.GameBoard.getAllLegalMoves(self.player)
             if not legalMoves: return self.evaluate(self.player), None # no legal actions
 
             for action in legalMoves:
@@ -110,7 +100,7 @@ class AI(object):
             # get all legal actions for all other players and preserve the board
             for player in self.GameBoard.players:
                 if player == self.player: continue
-                legalMoves = self.getAllLegalMoves(player)
+                legalMoves = self.GameBoard.getAllLegalMoves(player)
                 if not legalMoves: return self.evaluate(player), None # no legal actions
 
                 for action in legalMoves:
@@ -277,7 +267,7 @@ if __name__ == "__main__":
             if AI.player == currPlayer: 
                 if numPiecesEachPlayer[currPlayer] == 0: # this player is eliminated, so skip its round
                     print("no pieces left, skip player", currPlayer)
-                elif not AI.getAllLegalMoves(currPlayer): # this player has no legal moves, so skip its round
+                elif not testBoard2.getAllLegalMoves(currPlayer): # this player has no legal moves, so skip its round
                     print("no legal moves, skip player", currPlayer)
                 else: AI.move()
         playerIdx += 1

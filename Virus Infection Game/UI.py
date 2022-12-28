@@ -129,38 +129,47 @@ class UI(object):
         # level selection mode (only applicable for single player (AI) mode)
         elif data.levelSelectionMode: # TODO
             if len(data.players) == 2:
-                # if data.width//2 <= event.x <= data.width*(3/4) and data.height*(2/5) <= event.y <= data.height*(1/2):
-                #     data.AI = AI(self.GameBoard, 0)
-                #     data.levelSelectionMode = False
-                #     data.inGame = True
-                pass
+                # easy level
+                if data.width//2 <= event.x <= data.width*(3/4) and data.height*(2/5) <= event.y <= data.height*(1/2):
+                    easyAI = AI(self.GameBoard, 0, 1)
+                    data.AIs.append(easyAI)
+                    data.levelSelectionMode = False
+                    data.inGame = True
             
-            # # normal level
-            # elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-            #     event.y in range(int(data.height*(3/5+1/30)), \
-            #                     int(data.height*(7/10+1/30))):
-            #     data.AI = AI(self.GameBoard, 1)
-            #     data.levelSelectionMode = False
-            #     data.inGame = True
+                # normal level
+                elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+                    event.y in range(int(data.height*(3/5+1/30)), \
+                                    int(data.height*(7/10+1/30))):
+                    mediumAI = AI(self.GameBoard, 1, 1)
+                    data.AIs.append(mediumAI)
+                    data.levelSelectionMode = False
+                    data.inGame = True
 
-            # # hard level
-            # elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-            #     event.y in range(int(data.height*(7/10+1/15)), \
-            #                     int(data.height*(4/5+1/15))):
-            #     data.AI = AI(self.GameBoard, 2)
-            #     data.levelSelectionMode = False
-            #     data.inGame = True
+                # hard level
+                elif event.x in range(data.width//4, int(data.width*(3/4))) and \
+                    event.y in range(int(data.height*(7/10+1/15)), \
+                                    int(data.height*(4/5+1/15))):
+                    hardAI = AI(self.GameBoard, 2, 1)
+                    data.AIs.append(hardAI)
+                    data.levelSelectionMode = False
+                    data.inGame = True
+
+                data.AIPlayers = [1]
+
+            elif len(data.players) == 3: pass
+
+            elif len(data.players) == 4: pass
 
         elif data.inGame:
             player = data.players[data.playeridx]
             numPiecesEachPlayer = self.GameBoard.getNumPiecesEachPlayer()
-            if (numPiecesEachPlayer[player] == 0 and not self.GameBoard.isGameOver()): # this player is eliminated, so skip its round
+            if (numPiecesEachPlayer[player] == 0 or not self.GameBoard.getAllLegalMoves(player)) and not self.GameBoard.isGameOver(): # this player is eliminated, so skip its round
                 print("skip player", player)
                 data.playeridx += 1 # switch player
                 data.playeridx %= len(data.players)
             else:
                 if player in data.AIPlayers:
-                    for AI in AIs:
+                    for AI in data.AIs:
                         if AI.player == player: AI.move()
                 else:
                     row, col = self.getCell(event.x, event.y, data)

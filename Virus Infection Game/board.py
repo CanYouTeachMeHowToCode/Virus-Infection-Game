@@ -50,6 +50,16 @@ class Board(object):
                 if self.isLegalMove(pos, newPos) or self.isLegalJump(pos, newPos): legalPos.append(newPos)
         return legalPos
 
+    def getAllLegalMoves(self, player): # None -> list[tuple(tuple(int, int))]
+        legalMoves = []
+        for row in range(self.size):
+            for col in range(self.size):
+                pos = (row, col)
+                if self.board[row][col] == player:
+                    allLegalPos = self.getLegalPos(pos)
+                    for newPos in allLegalPos: legalMoves.append((pos, newPos))
+        return legalMoves
+
     def invade(self, player, currPos):
         '''
         Once a moving step is completed, the virus/pill on that unit can invade the area 1 unit surrounding it. 
