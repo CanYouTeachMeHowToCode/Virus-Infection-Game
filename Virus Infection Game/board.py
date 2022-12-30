@@ -79,7 +79,7 @@ class Board(object):
                         self.board[invadePos[0]][invadePos[1]] = player
 
 
-    def step(self, player, pos, newPos, verbose=True):
+    def step(self, player, pos, newPos, verbose=True): # for terminal playing version only
         assert(self.board[pos[0]][pos[1]] == player) # current player is only allowed to move his/her own pieces
         if self.isLegalMove(pos, newPos):
             self.board[newPos[0]][newPos[1]] = player

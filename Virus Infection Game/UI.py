@@ -1,7 +1,8 @@
 # Virus Infection Game User Interface (UI), using tkinter
-
 from tkinter import *
 from board import Board
+from AI import AI
+
 import string
 import sys
 
@@ -79,14 +80,23 @@ class UI(object):
         data.timeCounter = 0
 
         # AI settings
-        data.AIs = [] # all AI player object
-        data.AIPlayers = [] # all AI player id
+        data.AIs = [None, None, None, None] # all AI player object
+        data.AIPlayers = [False, False, False, False] # is AI player or not
 
     def resetGameBoard(self, data):
         self.GameBoard = Board(size=data.size, numPlayers=len(data.players))
+        for ai in data.AIs: 
+            if ai: ai.GameBoard = self.GameBoard
         data.board = self.GameBoard.board
         data.boardSize = data.width - 2*data.margin
         data.cellSize = data.boardSize / data.size
+        data.playeridx = 0 # also reset player turns
+        data.gameOver = False
+        data.gamePaused = False
+        data.selectedPos = -1, -1
+        data.putPos = -1, -1
+        data.winner = None
+        data.origPos = None
 
 ## Controller functions below
     def mousePressed(self, event, data):
@@ -127,40 +137,40 @@ class UI(object):
                 data.customizeMode = False
 
         # level selection mode (only applicable for single player (AI) mode)
-        elif data.levelSelectionMode: # TODO
+        elif data.levelSelectionMode:
             if len(data.players) == 2:
                 # easy level
-                if data.width//2 <= event.x <= data.width*(3/4) and data.height*(2/5) <= event.y <= data.height*(1/2):
+                if data.width//4 <= event.x <= data.width*(3/4) and data.height//2 <= event.y <= data.height*(3/5):
                     easyAI = AI(self.GameBoard, 0, 1)
-                    data.AIs.append(easyAI)
+                    data.AIs[1] = easyAI
                     data.levelSelectionMode = False
                     data.inGame = True
             
                 # normal level
-                elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-                    event.y in range(int(data.height*(3/5+1/30)), \
-                                    int(data.height*(7/10+1/30))):
+                elif data.width//4 <= event.x <= data.width*(3/4) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
                     mediumAI = AI(self.GameBoard, 1, 1)
-                    data.AIs.append(mediumAI)
+                    data.AIs[1] = mediumAI
                     data.levelSelectionMode = False
                     data.inGame = True
 
                 # hard level
-                elif event.x in range(data.width//4, int(data.width*(3/4))) and \
-                    event.y in range(int(data.height*(7/10+1/15)), \
-                                    int(data.height*(4/5+1/15))):
+                elif data.width//4 <= event.x <= data.width*(3/4) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
                     hardAI = AI(self.GameBoard, 2, 1)
-                    data.AIs.append(hardAI)
+                    data.AIs[1] = hardAI
                     data.levelSelectionMode = False
                     data.inGame = True
 
-                data.AIPlayers = [1]
+                data.AIPlayers[1] = True
 
             elif len(data.players) == 3: pass
 
             elif len(data.players) == 4: pass
 
         elif data.inGame:
+            print("data.players:", data.players)
+            print("data.playeridx: ", data.playeridx)
+            print("data.AIs", data.AIs)
+            print("data.AIPlayers", data.AIPlayers)
             player = data.players[data.playeridx]
             numPiecesEachPlayer = self.GameBoard.getNumPiecesEachPlayer()
             if (numPiecesEachPlayer[player] == 0 or not self.GameBoard.getAllLegalMoves(player)) and not self.GameBoard.isGameOver(): # this player is eliminated, so skip its round
@@ -168,9 +178,18 @@ class UI(object):
                 data.playeridx += 1 # switch player
                 data.playeridx %= len(data.players)
             else:
-                if player in data.AIPlayers:
-                    for AI in data.AIs:
-                        if AI.player == player: AI.move()
+                print("player: ", player)
+                if data.AIPlayers[player]: 
+                    print("AI's turn")
+                    ai = data.AIs[player]                       
+                    ai.move()
+                    if self.GameBoard.isGameOver(): 
+                        data.gameOver = True
+                        data.inGame = False
+                        data.winner = self.GameBoard.winner
+                    data.playeridx += 1 # switch player
+                    data.playeridx %= len(data.players)
+
                 else:
                     row, col = self.getCell(event.x, event.y, data)
                     if data.selectedPos == (-1, -1): 
@@ -182,7 +201,6 @@ class UI(object):
 
                     print("data.selectedPos: ", data.selectedPos)
                     print("data.putPos: ", data.putPos)
-                    print("player: ", player)
                     if data.selectedPos == (-1, -1) and data.putPos == (-1, -1):
                         pass   
                     elif data.selectedPos != (-1, -1) and data.putPos == (-1, -1):
@@ -208,6 +226,7 @@ class UI(object):
                         assert(False)
 
             self.GameBoard.printBoard()
+            data.board = self.GameBoard.board
             print("\n")
 
         if data.settingsMode:
@@ -254,7 +273,6 @@ class UI(object):
                 data.inGame = True
                 data.gameOver = False
                 self.resetGameBoard(data)
-                data.playeridx = 0 # also reset player turns
 
             # press "b" to return back to the home page after game is over
             if event.keysym == "b": self.init(data) 
@@ -542,18 +560,19 @@ class UI(object):
         elif data.gameOver: self.drawGameOverPage(canvas, data)
 
     def timerFired(self, data):
-        if data.inGame and not data.gameOver and not data.gamePaused:
-            data.timeCounter += 1
+        pass
+    #     if data.inGame and not data.gameOver and not data.gamePaused:
+    #         data.timeCounter += 1
 
-            if data.singlePlayerMode:
-                data.timerDelay = 200
-                if not self.GameBoard.GameOver():
-                    # move twice in each timer delay period
-                    self.AImove(data)
-                else:
-                    data.inGame = False
-                    if self.GameBoard.contains2048(): data.reach2048 = True
-                    else: data.cannotMove = True
+    #         if data.singlePlayerMode:
+    #             data.timerDelay = 200
+    #             if not self.GameBoard.GameOver():
+    #                 # move twice in each timer delay period
+    #                 self.AImove(data)
+    #             else:
+    #                 data.inGame = False
+    #                 if self.GameBoard.contains2048(): data.reach2048 = True
+    #                 else: data.cannotMove = True
 
     def runGame(self, width, height): # tkinter starter code
         def redrawAllWrapper(canvas, data):

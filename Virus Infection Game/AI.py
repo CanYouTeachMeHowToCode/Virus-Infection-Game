@@ -120,7 +120,7 @@ class AI(object):
 # test
 if __name__ == "__main__":
     # 2 players
-    testBoard = Board(size=7, numPlayers=2)
+    testBoard = Board(size=8, numPlayers=2)
 
     easyPillsAI = AI(testBoard, 0, 0) # easy level AI, AI plays pills
     mediumPillsAI = AI(testBoard, 1, 0) # medium level AI, AI plays pills
@@ -223,57 +223,57 @@ if __name__ == "__main__":
     #     playerIdx %= len(players)
 
 
-    # # hard AI vs hard AI
-    # players = testBoard.players
-    # playerIdx = 0
-    # while not testBoard.isGameOver():
-    #     currPlayer = players[playerIdx]
-    #     testBoard.printBoard()
-    #     print("currPlayer: " + str(currPlayer))
-    #     for AI in [hardPillsAI, hardVirus1AI]:
-    #         if AI.player == currPlayer: AI.move()
-
-    #     playerIdx += 1
-    #     playerIdx %= len(players)
-
-    
-
-    # testBoard.printBoard()
-
-    ################################################################
-    # more than 2 players
-    testBoard2 = Board(size=8, numPlayers=4)
-
-    AIs = []
-    hardPillsAI = AI(testBoard2, 1, 0) # medium level AI, AI plays pills
-    AIs.append(hardPillsAI)
-    easyVirus1AI = AI(testBoard2, 0, 1) # easy level AI, AI plays virus 1
-    AIs.append(easyVirus1AI)
-    mediumVirus2AI = AI(testBoard2, 1, 2) # medium level AI, AI plays virus 2
-    AIs.append(mediumVirus2AI)
-    hardVirus3AI = AI(testBoard2, 2, 3) # hard level AI, AI plays virus 3
-    AIs.append(hardVirus3AI)
-    # mediumVirus3AI = AI(testBoard2, 1, 3) # medium level AI, AI plays virus 3
-    # AIs.append(mediumVirus3AI)
-
-    players = testBoard2.players
+    # hard AI vs hard AI
+    players = testBoard.players
     playerIdx = 0
-    while not testBoard2.isGameOver():
+    while not testBoard.isGameOver():
         currPlayer = players[playerIdx]
-        numPiecesEachPlayer = testBoard2.getNumPiecesEachPlayer()
-        testBoard2.printBoard()
+        testBoard.printBoard()
         print("currPlayer: " + str(currPlayer))
-        for AI in AIs:
-            if AI.player == currPlayer: 
-                if numPiecesEachPlayer[currPlayer] == 0: # this player is eliminated, so skip its round
-                    print("no pieces left, skip player", currPlayer)
-                elif not testBoard2.getAllLegalMoves(currPlayer): # this player has no legal moves, so skip its round
-                    print("no legal moves, skip player", currPlayer)
-                else: AI.move()
+        for AI in [hardPillsAI, hardVirus1AI]:
+            if AI.player == currPlayer: AI.move()
+
         playerIdx += 1
         playerIdx %= len(players)
 
-    testBoard2.printBoard()
+    
+
+    testBoard.printBoard()
+
+    ################################################################
+    # # more than 2 players
+    # testBoard2 = Board(size=8, numPlayers=4)
+
+    # AIs = []
+    # hardPillsAI = AI(testBoard2, 1, 0) # medium level AI, AI plays pills
+    # AIs.append(hardPillsAI)
+    # easyVirus1AI = AI(testBoard2, 0, 1) # easy level AI, AI plays virus 1
+    # AIs.append(easyVirus1AI)
+    # mediumVirus2AI = AI(testBoard2, 1, 2) # medium level AI, AI plays virus 2
+    # AIs.append(mediumVirus2AI)
+    # hardVirus3AI = AI(testBoard2, 2, 3) # hard level AI, AI plays virus 3
+    # AIs.append(hardVirus3AI)
+    # # mediumVirus3AI = AI(testBoard2, 1, 3) # medium level AI, AI plays virus 3
+    # # AIs.append(mediumVirus3AI)
+
+    # players = testBoard2.players
+    # playerIdx = 0
+    # while not testBoard2.isGameOver():
+    #     currPlayer = players[playerIdx]
+    #     numPiecesEachPlayer = testBoard2.getNumPiecesEachPlayer()
+    #     testBoard2.printBoard()
+    #     print("currPlayer: " + str(currPlayer))
+    #     for AI in AIs:
+    #         if AI.player == currPlayer: 
+    #             if numPiecesEachPlayer[currPlayer] == 0: # this player is eliminated, so skip its round
+    #                 print("no pieces left, skip player", currPlayer)
+    #             elif not testBoard2.getAllLegalMoves(currPlayer): # this player has no legal moves, so skip its round
+    #                 print("no legal moves, skip player", currPlayer)
+    #             else: AI.move()
+    #     playerIdx += 1
+    #     playerIdx %= len(players)
+
+    # testBoard2.printBoard()
 
         
 
