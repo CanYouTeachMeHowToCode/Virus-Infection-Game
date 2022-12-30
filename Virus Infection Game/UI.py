@@ -287,9 +287,9 @@ class UI(object):
         canvas.create_text(data.width//2, data.height//8, text="VIRUS", fill="#64DD17", font="Chalkduster 75 bold" )
         canvas.create_text(data.width//2, data.height//4, text="INFECTION", fill="light coral", font="Chalkduster 75 bold")    
         canvas.create_text(data.width//2, 3*(data.height//8), text="GAME", fill="green yellow", font="Chalkduster 75 bold")                                        
-        canvas.create_image(data.width*(7/8), data.height*(1/8), image=data.virus2Image)
+        canvas.create_image(data.width*(7/8), data.height*(1/8), image=data.virus1Image)
         canvas.create_image(data.width*(1/8), data.height*(3/8), image=data.pillsImage)
-        canvas.create_image(data.width*(1/8), data.height*(1/8), image=data.virus1Image)
+        canvas.create_image(data.width*(1/8), data.height*(1/8), image=data.virus2Image)
         canvas.create_image(data.width*(7/8), data.height*(3/8), image=data.virus3Image)
 
         # single player mode button

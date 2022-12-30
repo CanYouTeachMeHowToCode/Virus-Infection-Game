@@ -12,7 +12,7 @@ class Board(object):
 
         # at most 1 pills, 3 enemies 
         self.players = list(range(numPlayers))
-        startPos = [[self.size-1, 0], [0, 0], [0, self.size-1], [self.size-1, self.size-1]]
+        startPos = [[self.size-1, 0], [0, self.size-1], [0, 0], [self.size-1, self.size-1]]
         for i in range(numPlayers): # initialize
             self.board[startPos[i][0]][startPos[i][1]] = self.players[i]
 
