@@ -57,7 +57,7 @@ class AI(object):
 
      # hard level AI: move based on Minimax algorithm with alpha-beta pruning
     def hardAIMove(self):
-        return self.maxieMoveAlphaBeta(depth=6)[1]
+        return self.maxieMoveAlphaBeta(depth=4)[1]
 
     def maxieMoveAlphaBeta(self, depth, alpha=-float('inf'), beta=float('inf')):
         assert(alpha < beta)
@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
     # medium AI vs hard AI
     winners = []
-    for _ in range(20):
+    for _ in range(10):
         testBoard = Board(size=7, numPlayers=2)
         players = testBoard.players
         playerIdx = 0
@@ -179,15 +179,15 @@ if __name__ == "__main__":
             playerIdx %= len(players)
         testBoard.printBoard()
         winners.append(testBoard.winner)
-    print("winners of medium vs hard 20 times: ", winners)
-    print("medium AI (pills) win rate:", winners.count(0)/20)
-    print("hard AI (virus 1) win rate:", winners.count(1)/20)
-    print("Tie rate:", winners.count(-1)/20)
+    print("winners of medium vs hard 10 times: ", winners)
+    print("medium AI (pills) win rate:", winners.count(0)/10)
+    print("hard AI (virus 1) win rate:", winners.count(1)/10)
+    print("Tie rate:", winners.count(-1)/10)
 
 
     # hard AI vs medium AI
     winners = []
-    for _ in range(20):
+    for _ in range(10):
         testBoard = Board(size=7, numPlayers=2)
         players = testBoard.players
         playerIdx = 0
@@ -203,10 +203,10 @@ if __name__ == "__main__":
             playerIdx %= len(players)
         testBoard.printBoard()
         winners.append(testBoard.winner)
-    print("winners of hard vs medium 20 times: ", winners)
-    print("hard AI (pills) win rate:", winners.count(0)/20)
-    print("medium AI (virus 1) win rate:", winners.count(1)/20)
-    print("Tie rate:", winners.count(-1)/20)
+    print("winners of hard vs medium 10 times: ", winners)
+    print("hard AI (pills) win rate:", winners.count(0)/10)
+    print("medium AI (virus 1) win rate:", winners.count(1)/10)
+    print("Tie rate:", winners.count(-1)/10)
 
 
     #######################################################################

@@ -1,8 +1,8 @@
 # Virus Infection Game Board
 
 class Board(object):
-    def __init__(self, size=8, numPlayers=2):
-        # size default set to 8, but can be customized (from 5 to 10)
+    def __init__(self, size=7, numPlayers=2):
+        # size default set to 7, but can be customized (from 5 to 10)
         # number of players default set to 2 (one pill and one virus), but can be customized (from 2 to 4)
 
         # -1 represents empty grid, 0 represents pill (player), 1 to (numPlayers-1) represents enemies (virus or other pills)
