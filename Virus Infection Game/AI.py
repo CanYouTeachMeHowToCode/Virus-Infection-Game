@@ -97,29 +97,30 @@ class AI(object):
         if self.GameBoard.isGameOver(): return (float('-inf'), None) if self.GameBoard.winner != self.player and self.GameBoard.winner != -1 else (float('inf'), None)
         elif not depth: return np.mean([self.evaluate(player) for player in self.GameBoard.players if player != self.player]), None # depth = 0
         else:
-            # get all legal actions for current player and preserve the board
-            legalMoves = self.GameBoard.getAllLegalMoves(self.player)
-            if not legalMoves: return self.evaluate(self.player), None # no legal actions
-
-            bestScore, bestAction = float('inf'), None
             # get all legal actions for all other players and preserve the board
+            allLegalMoves = []
             for player in self.GameBoard.players:
                 if player == self.player: continue
                 legalMoves = self.GameBoard.getAllLegalMoves(player)
-                if not legalMoves: return self.evaluate(player), None # no legal actions
+                allLegalMoves += legalMoves
+            if not allLegalMoves: return np.mean([self.evaluate(player) for player in self.GameBoard.players if player != self.player]), None # no legal actions
 
-                for action in legalMoves:
-                    beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
-                    pos, newPos = action
-                    self.GameBoard.step(player, pos, newPos, verbose=False)
-                    maxieScore, _ = self.maxieMoveAlphaBeta(depth-1, alpha, beta)
-                    self.GameBoard.board = beforeMoveBoard # undo the move
+            bestScore, bestAction = float('inf'), None
+            # get all legal actions for all other players and preserve the board
+            for action in allLegalMoves:
+                beforeMoveBoard = copy.deepcopy(self.GameBoard.board)
+                pos, newPos = action
+                player = self.GameBoard.board[pos[0]][pos[1]]
+                assert(player != self.player)
+                self.GameBoard.step(player, pos, newPos, verbose=False)
+                maxieScore, _ = self.maxieMoveAlphaBeta(depth-1, alpha, beta)
+                self.GameBoard.board = beforeMoveBoard # undo the move
 
-                    if maxieScore < bestScore:
-                        bestScore = maxieScore
-                        bestAction = action
-                        beta = min(beta, bestScore)
-                        if alpha >= beta: return bestScore, bestAction
+                if maxieScore < bestScore:
+                    bestScore = maxieScore
+                    bestAction = action
+                    beta = min(beta, bestScore)
+                    if alpha >= beta: return bestScore, bestAction
 
             return bestScore, bestAction
 
