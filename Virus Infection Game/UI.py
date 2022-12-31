@@ -143,28 +143,116 @@ class UI(object):
                 if data.width//4 <= event.x <= data.width*(3/4) and data.height//2 <= event.y <= data.height*(3/5):
                     easyAI = AI(self.GameBoard, 0, 1)
                     data.AIs[1] = easyAI
-                    data.levelSelectionMode = False
-                    data.inGame = True
             
                 # normal level
                 elif data.width//4 <= event.x <= data.width*(3/4) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
                     mediumAI = AI(self.GameBoard, 1, 1)
                     data.AIs[1] = mediumAI
-                    data.levelSelectionMode = False
-                    data.inGame = True
 
                 # hard level
                 elif data.width//4 <= event.x <= data.width*(3/4) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
                     hardAI = AI(self.GameBoard, 2, 1)
                     data.AIs[1] = hardAI
+
+                if data.AIs[1]:
+                    data.AIPlayers[1] = True
                     data.levelSelectionMode = False
                     data.inGame = True
 
-                data.AIPlayers[1] = True
+            elif len(data.players) == 3: 
+                ## virus 1
+                # easy level
+                if data.width*(3/20) <= event.x <= data.width*(9/20) and data.height//2 <= event.y <= data.height*(3/5):
+                    easyAI = AI(self.GameBoard, 0, 1)
+                    data.AIs[1] = easyAI
+            
+                # normal level
+                elif data.width*(3/20) <= event.x <= data.width*(9/20) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                    mediumAI = AI(self.GameBoard, 1, 1)
+                    data.AIs[1] = mediumAI
 
-            elif len(data.players) == 3: pass
+                # hard level
+                elif data.width*(3/20) <= event.x <= data.width*(9/20) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
+                    hardAI = AI(self.GameBoard, 2, 1)
+                    data.AIs[1] = hardAI
 
-            elif len(data.players) == 4: pass
+                ## virus 2
+                # easy level
+                if data.width*(11/20) <= event.x <= data.width*(17/20) and data.height//2 <= event.y <= data.height*(3/5):
+                    easyAI = AI(self.GameBoard, 0, 2)
+                    data.AIs[2] = easyAI
+            
+                # normal level
+                elif data.width*(11/20) <= event.x <= data.width*(17/20) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                    mediumAI = AI(self.GameBoard, 1, 2)
+                    data.AIs[2] = mediumAI
+
+                # hard level
+                elif data.width*(11/20) <= event.x <= data.width*(17/20) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
+                    hardAI = AI(self.GameBoard, 2, 2)
+                    data.AIs[2] = hardAI
+
+                if data.AIs[1] != None and data.AIs[2] != None:
+                    data.AIPlayers[1] = True
+                    data.AIPlayers[2] = True
+                    data.levelSelectionMode = False
+                    data.inGame = True
+
+            elif len(data.players) == 4: 
+                ## virus 1
+                # easy level
+                if data.width*(1/4-1/10) <= event.x <= data.width*(1/4+1/10) and data.height//2 <= event.y <= data.height*(3/5):
+                    easyAI = AI(self.GameBoard, 0, 1)
+                    data.AIs[1] = easyAI
+            
+                # normal level
+                elif data.width*(1/4-1/10) <= event.x <= data.width*(1/4+1/10) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                    mediumAI = AI(self.GameBoard, 1, 1)
+                    data.AIs[1] = mediumAI
+
+                # hard level
+                elif data.width*(1/4-1/10) <= event.x <= data.width*(1/4+1/10) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
+                    hardAI = AI(self.GameBoard, 2, 1)
+                    data.AIs[1] = hardAI
+
+                ## virus 2
+                # easy level
+                if data.width*(1/2-1/10) <= event.x <= data.width*(1/2+1/10) and data.height//2 <= event.y <= data.height*(3/5):
+                    easyAI = AI(self.GameBoard, 0, 2)
+                    data.AIs[2] = easyAI
+            
+                # normal level
+                elif data.width*(1/2-1/10) <= event.x <= data.width*(1/2+1/10) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                    mediumAI = AI(self.GameBoard, 1, 2)
+                    data.AIs[2] = mediumAI
+
+                # hard level
+                elif data.width*(1/2-1/10) <= event.x <= data.width*(1/2+1/10) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
+                    hardAI = AI(self.GameBoard, 2, 2)
+                    data.AIs[2] = hardAI
+
+                ## virus 3
+                # easy level
+                if data.width*(3/4-1/10) <= event.x <= data.width*(3/4+1/10) and data.height//2 <= event.y <= data.height*(3/5):
+                    easyAI = AI(self.GameBoard, 0, 3)
+                    data.AIs[3] = easyAI
+            
+                # normal level
+                elif data.width*(3/4-1/10) <= event.x <= data.width*(3/4+1/10) and data.height*(3/5+1/30) <= event.y <= data.height*(7/10+1/30):
+                    mediumAI = AI(self.GameBoard, 1, 3)
+                    data.AIs[3] = mediumAI
+
+                # hard level
+                elif data.width*(3/4-1/10) <= event.x <= data.width*(3/4+1/10) and data.height*(7/10+1/15) <= event.y <= data.height*(4/5+1/15):
+                    hardAI = AI(self.GameBoard, 2, 3)
+                    data.AIs[3] = hardAI
+
+                if data.AIs[1] != None and data.AIs[2] != None and data.AIs[3] != None:
+                    data.AIPlayers[1] = True
+                    data.AIPlayers[2] = True
+                    data.AIPlayers[3] = True
+                    data.levelSelectionMode = False
+                    data.inGame = True
 
         elif data.inGame:
             print("data.players:", data.players)
